@@ -27,4 +27,46 @@ const registerMember = async (req, res) => {
     }
 };
 
-module.exports = { registerMember };
+const loginMember = async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // SCRUM-80: find member by email
+        const result = await pool.query(
+            'SELECT * FROM members WHERE email = $1', [email]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        const member = result.rows[0];
+
+        // SCRUM-81: verify password with bcrypt
+        const passwordMatch = await bcrypt.compare(password, member.password);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: 'Invalid email or password' });
+        }
+
+        // SCRUM-82: create session
+        req.session.memberId = member.id;
+        req.session.memberName = member.full_name;
+        req.session.memberEmail = member.email;
+
+        res.status(200).json({
+            message: 'Login successful',
+            member: {
+                id: member.id,
+                full_name: member.full_name,
+                email: member.email
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { registerMember, loginMember };

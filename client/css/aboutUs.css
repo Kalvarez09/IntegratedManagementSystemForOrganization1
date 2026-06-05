@@ -1,0 +1,141 @@
+body{
+    
+    background-image:url(../background.jpg) ;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    color: #F5F5F5;
+    font-size: 25px;
+    font-family: monospace;
+    text-align: center;
+}
+h1 {
+    text-shadow: 2px 2px #2e6ab9;
+    margin-top: 80px;
+    position: relative;
+    z-index: 2;
+}
+h2{
+    text-shadow: 2px 2px #2e6ab9;
+
+}
+h3{
+    text-shadow: 2px 2px #2982f7;
+
+}
+p{
+    font-family: sans-serif;
+    font-size: 20px;
+}
+
+.grid{
+    display: flex;
+    height: 90vh;
+    margin-left: 100px;
+    margin-right: 100px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    justify-content: space-around;
+    align-content: flex-start;
+    column-gap: 0px;
+    row-gap: 0px;
+     /* add as a last resort: overflow: scroll; */
+}
+figcaption{
+    text-align: center;
+}
+.album{
+    width: 250px;
+    height: 250px;
+    text-align: center;
+    border-radius: 15px;
+}
+#Aless{
+   background: url(../images/Alessandro.avif) no-repeat center/cover;
+}
+#Aless:hover{
+     background: url(../images/h1back.jpg) no-repeat center/cover;
+
+}
+#Nat{
+   background: url(../images/Natalie.png) no-repeat center/cover;
+}
+#Nat:hover{
+     background: url(../images/h2back.jpg) no-repeat center/cover;
+
+}
+#Khumo{
+   background: url(../images/Khumo.webp) no-repeat center/cover;
+}
+#Khumo:hover{
+     background: url(../images/h3back.jpg) no-repeat center/cover;
+
+}
+#Tem{
+   background: url(../images/Temirlan.webp) no-repeat center/cover;
+}
+#Tem:hover{
+     background: url(../images/h4back.png) no-repeat center/cover;
+
+}
+#Moaz{
+   background: url(../images/Moaz.png) no-repeat center/cover;
+}
+#Moaz:hover{
+     background: url(../images/h5back.jpg) no-repeat center/cover;
+
+}
+#Kar{
+   background: url(../images/Karim.png) no-repeat center/cover;
+}
+#Kar:hover{
+     background: url(../images/h5back.jpg) no-repeat center/cover;
+
+}
+.text article{
+    font-family: monospace;
+    font-size: medium;
+}
+.text{
+    background: transparent;
+    border: 2px solid #071323;
+    color: #fff;
+    border-radius: 10px;
+    padding: 30px 40px;
+    backdrop-filter: blur(20px);
+}
+.navbar {
+    font-size: x-large;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+.navbar ul{
+    list-style-type: none;
+ backdrop-filter: blur(20px);
+     padding: 10px; 
+    margin: 0;
+    display: flex; 
+    align-items: center; 
+    border-radius: 0px;
+}
+.push-right {
+    margin-left: auto;
+}
+.navbar a{
+   color: white;
+    text-decoration: none;
+    padding: 10px 15px;
+    display: block;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+.navbar a:hover{
+    background-color:#16263B ;
+}
+.navbar li{
+    float: left;
+}

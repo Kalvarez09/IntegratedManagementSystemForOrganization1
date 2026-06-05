@@ -7,77 +7,82 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     const confirm_password = document.getElementById('confirm_password').value;
     const messageBox = document.getElementById('message');
 
-    // Reset validation
-    document.querySelectorAll('.form-control').forEach(el => {
-        el.classList.remove('is-invalid', 'is-valid');
-    });
+    // reset message box
+    messageBox.style.display = 'none';
+    messageBox.textContent = '';
 
     let isValid = true;
+    let errorMsg = '';
 
-    // Validate full name
+    // validate full name
     if (!full_name) {
-        document.getElementById('full_name').classList.add('is-invalid');
         isValid = false;
-    } else {
-        document.getElementById('full_name').classList.add('is-valid');
+        errorMsg = 'Please enter your full name.';
     }
 
-    // Validate email
+    // validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        document.getElementById('email').classList.add('is-invalid');
+    if (isValid && !emailRegex.test(email)) {
         isValid = false;
-    } else {
-        document.getElementById('email').classList.add('is-valid');
+        errorMsg = 'Please enter a valid email address.';
     }
 
-    // Validate password length
-    if (password.length < 6) {
-        document.getElementById('password').classList.add('is-invalid');
+    // validate password length
+    if (isValid && password.length < 6) {
         isValid = false;
-    } else {
-        document.getElementById('password').classList.add('is-valid');
+        errorMsg = 'Password must be at least 6 characters.';
     }
 
-    // Validate confirm password
-    if (password !== confirm_password) {
-        document.getElementById('confirm_password').classList.add('is-invalid');
-        document.getElementById('confirm-feedback').textContent = 'Passwords do not match.';
+    // validate passwords match
+    if (isValid && password !== confirm_password) {
         isValid = false;
-    } else if (!confirm_password) {
-        document.getElementById('confirm_password').classList.add('is-invalid');
-        document.getElementById('confirm-feedback').textContent = 'Please confirm your password.';
-        isValid = false;
-    } else {
-        document.getElementById('confirm_password').classList.add('is-valid');
+        errorMsg = 'Passwords do not match.';
     }
 
-    if (!isValid) return;
+    if (!isValid) {
+        messageBox.style.display = 'block';
+        messageBox.style.background = 'rgba(220, 53, 69, 0.2)';
+        messageBox.style.color = '#ff6b6b';
+        messageBox.style.border = '1px solid rgba(220, 53, 69, 0.4)';
+        messageBox.textContent = errorMsg;
+        return;
+    }
 
-    // Submit to backend
+    // submit to backend
     try {
-        const response = await fetch('http://localhost:3000/api/auth/register', {
+        const response = await fetch('/api/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ full_name, email, password })
         });
 
         const data = await response.json();
-        messageBox.classList.remove('d-none', 'alert-danger', 'alert-success');
+        messageBox.style.display = 'block';
 
         if (response.ok) {
-            messageBox.classList.add('alert-success');
-            messageBox.textContent = '✅ ' + data.message;
+            messageBox.style.background = 'rgba(40, 167, 69, 0.2)';
+            messageBox.style.color = '#51cf66';
+            messageBox.style.border = '1px solid rgba(40, 167, 69, 0.4)';
+            messageBox.textContent = data.message;
             document.getElementById('registerForm').reset();
-            document.querySelectorAll('.form-control').forEach(el => el.classList.remove('is-valid'));
+
+            // redirect to member page after 1.5 seconds (SCRUM-78)
+            setTimeout(() => {
+                window.location.href = '../pages/MemberPage.html';
+            }, 1500);
+
         } else {
-            messageBox.classList.add('alert-danger');
-            messageBox.textContent = '❌ ' + data.message;
+            messageBox.style.background = 'rgba(220, 53, 69, 0.2)';
+            messageBox.style.color = '#ff6b6b';
+            messageBox.style.border = '1px solid rgba(220, 53, 69, 0.4)';
+            messageBox.textContent = data.message;
         }
 
     } catch (error) {
-        messageBox.classList.remove('d-none');
-        messageBox.classList.add('alert-danger');
-        messageBox.textContent = '❌ Could not connect to server.';
+        messageBox.style.display = 'block';
+        messageBox.style.background = 'rgba(220, 53, 69, 0.2)';
+        messageBox.style.color = '#ff6b6b';
+        messageBox.style.border = '1px solid rgba(220, 53, 69, 0.4)';
+        messageBox.textContent = 'Could not connect to server.';
     }
 });
