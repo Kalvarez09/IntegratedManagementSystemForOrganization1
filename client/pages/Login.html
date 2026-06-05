@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <!---code for nav bar -->
+     <nav class="navbar">
+    <ul>
+        <li class="left"><a href="home.html">Home</a></li>
+        <li class="left"><a href="services.html">Services</a></li>
+        <li class="left"><a href="about-us.html">About Us</a></li>
+    </ul>
+</nav>
+<!---code for the form, any weird line, ask -->
+<div class="wrapper">
+<form id="loginForm" novalidate>
+<h1>Login</h1>
+<!---error message -->
+<div id="message"></div>
+<!---type name -->
+    <div class="input-box">
+<input type="text"placeholder="Username" id="email" required>
+    </div>
+    <!---type password -->
+    <div class="input-box">
+<input type="password" placeholder="Password" id="password" required>
+    </div>
+    <!---in case user forgets password -->
+    <div class="remember-forgot">
+<label>
+    <input type="checkbox"> Remember me
+</label>
+<a href="#" target="_blank">Forgot password?</a>
+    </div>
+    <!---in case user already has account, redirect to login -->
+<button type="submit" class="btn"> Login</button>
+<div class="register-link">
+    <p>Don't have an account?<a href="Register.html"> Register</a></p>
+   
+            </div>
+         </form>
+</div>
+<script src="../js/login.js"></script>
+</body>
+</html>

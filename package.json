@@ -1,28 +1,18 @@
 {
-  "name": "integratedmanagementsystemfororganization1",
+  "name": "integrated-management-system",
   "version": "1.0.0",
-  "description": "",
+  "description": "Integrated Digital Management System for Organization",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Kalvarez09/IntegratedManagementSystemForOrganization1.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/Kalvarez09/IntegratedManagementSystemForOrganization1/issues"
+  "scripts": {
+    "start": "node index.js"
   },
-  "homepage": "https://github.com/Kalvarez09/IntegratedManagementSystemForOrganization1#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "pg": "^8.21.0"
   }
 }
