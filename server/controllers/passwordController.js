@@ -4,13 +4,25 @@ const nodemailer = require('nodemailer');
 const pool = require('../database/database');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
+    host: '74.125.133.108',  // Gmail SMTP IPv4 — bypasses DNS lookup entirely
+    port: 465,
+    secure: true,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
+    tls: {
+        rejectUnauthorized: false,
+        servername: 'smtp.gmail.com'  // still verify against Gmail's cert
+    }
+});
+
+transporter.verify((error, success) => {
+    if (error) {
+        console.error('Transporter config error:', error);
+    } else {
+        console.log('Mail server is ready');
+    }
 });
 
 const forgotPassword = async (req, res) => {
