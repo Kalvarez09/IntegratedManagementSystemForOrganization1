@@ -30,7 +30,7 @@
 html, body {
     height: 100%;
     overflow: hidden;
-    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    font-family: monospace;
     background: var(--bg-main);
     color: var(--text-primary);
 }

@@ -83,4 +83,53 @@ const getMemberCount = async (req, res) => {
     }
 };
 
-module.exports = { registerMember, loginMember, getMemberCount };
+const updateProfile = async (req, res) => {
+    const { userId, full_name, email, currentPassword, newPassword, updateType } = req.body;
+
+    if (!userId) return res.status(400).json({ message: 'User ID is required' });
+
+    try {
+        const result = await pool.query('SELECT * FROM members WHERE id = $1', [userId]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        const member = result.rows[0];
+
+        if (updateType === 'name') {
+            if (!full_name) return res.status(400).json({ message: 'Full name is required' });
+            await pool.query('UPDATE members SET full_name = $1 WHERE id = $2', [full_name, userId]);
+            return res.status(200).json({ message: 'Name updated successfully' });
+        }
+
+        if (updateType === 'email') {
+            if (!email) return res.status(400).json({ message: 'Email is required' });
+            const existing = await pool.query('SELECT id FROM members WHERE email = $1 AND id != $2', [email, userId]);
+            if (existing.rows.length > 0) {
+                return res.status(400).json({ message: 'Email already in use by another account' });
+            }
+            await pool.query('UPDATE members SET email = $1 WHERE id = $2', [email, userId]);
+            return res.status(200).json({ message: 'Email updated successfully' });
+        }
+
+        if (updateType === 'password') {
+            if (!currentPassword || !newPassword) {
+                return res.status(400).json({ message: 'Current and new password are required' });
+            }
+            const passwordMatch = await bcrypt.compare(currentPassword, member.password);
+            if (!passwordMatch) {
+                return res.status(401).json({ message: 'Current password is incorrect' });
+            }
+            const hashed = await bcrypt.hash(newPassword, 10);
+            await pool.query('UPDATE members SET password = $1 WHERE id = $2', [hashed, userId]);
+            return res.status(200).json({ message: 'Password updated successfully' });
+        }
+
+        return res.status(400).json({ message: 'Invalid update type' });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { registerMember, loginMember, getMemberCount, updateProfile };

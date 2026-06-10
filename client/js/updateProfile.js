@@ -1,32 +1,28 @@
-// Load current user data
-window.addEventListener('load', () => {
-    const name = localStorage.getItem('user_name') || '';
-    const email = localStorage.getItem('user_email') || '';
+function getUser() {
+    try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
+}
 
-    document.getElementById('profileName').textContent = name;
-    document.getElementById('profileEmail').textContent = email;
-    document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
-    document.getElementById('full_name').value = name;
-    document.getElementById('email').value = email;
-    document.getElementById('currentNameDisplay').textContent = 'Current: ' + name;
-    document.getElementById('currentEmailDisplay').textContent = 'Current: ' + email;
+window.addEventListener('load', () => {
+    const user = getUser();
+    if (!user) { window.location.href = '/pages/Login.html'; return; }
+
+    document.getElementById('profileName').textContent = user.full_name;
+    document.getElementById('profileEmail').textContent = user.email;
+    document.getElementById('avatarInitial').textContent = user.full_name.charAt(0).toUpperCase();
+    document.getElementById('full_name').value = user.full_name;
+    document.getElementById('email').value = user.email;
 });
 
 function showSection(sectionId, btn) {
-    // Close all sections
     document.querySelectorAll('.form-section').forEach(s => s.classList.remove('open'));
     document.querySelectorAll('.btn-action').forEach(b => b.classList.remove('active'));
-
-    // Open clicked section
     document.getElementById(sectionId).classList.add('open');
     btn.classList.add('active');
 }
 
-// Show messages
 function showSuccess(msg) {
     const el = document.getElementById('successMsg');
-    const err = document.getElementById('errorMsg');
-    err.style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
     el.textContent = '✅ ' + msg;
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 3000);
@@ -34,24 +30,19 @@ function showSuccess(msg) {
 
 function showError(msg) {
     const el = document.getElementById('errorMsg');
-    const suc = document.getElementById('successMsg');
-    suc.style.display = 'none';
+    document.getElementById('successMsg').style.display = 'none';
     el.textContent = '❌ ' + msg;
     el.style.display = 'block';
     setTimeout(() => el.style.display = 'none', 3000);
 }
 
-// Go back to dashboard
 function goBack() {
-    const role = localStorage.getItem('user_role');
-    window.location.href = role === 'admin' ? '/ADMIN/index.html' : '/pages/MemberPage.html';
+    window.location.href = '/pages/Dashboard.html';
 }
 
-// Save Name only
 async function saveName() {
     const full_name = document.getElementById('full_name').value.trim();
     const nameError = document.getElementById('nameError');
-
     document.getElementById('full_name').classList.remove('is-invalid');
     nameError.textContent = '';
 
@@ -60,16 +51,13 @@ async function saveName() {
         nameError.textContent = 'Please enter your full name.';
         return;
     }
-
     await sendUpdate({ full_name, updateType: 'name' });
 }
 
-// Save Email only
 async function saveEmail() {
     const email = document.getElementById('email').value.trim();
     const emailError = document.getElementById('emailError');
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
     document.getElementById('email').classList.remove('is-invalid');
     emailError.textContent = '';
 
@@ -78,23 +66,19 @@ async function saveEmail() {
         emailError.textContent = 'Please enter a valid email.';
         return;
     }
-
     await sendUpdate({ email, updateType: 'email' });
 }
 
-// Save Password only
 async function savePassword() {
     const currentPassword = document.getElementById('currentPassword').value;
     const newPassword = document.getElementById('newPassword').value;
     const confirmPassword = document.getElementById('confirmPassword').value;
 
-    // Reset
     ['currentPassword', 'newPassword', 'confirmPassword'].forEach(id => {
         document.getElementById(id).classList.remove('is-invalid');
     });
 
     let isValid = true;
-
     if (!currentPassword) {
         document.getElementById('currentPassword').classList.add('is-invalid');
         document.getElementById('currentPwError').textContent = 'Current password is required.';
@@ -110,21 +94,19 @@ async function savePassword() {
         document.getElementById('confirmPwError').textContent = 'Passwords do not match.';
         isValid = false;
     }
-
     if (!isValid) return;
 
     await sendUpdate({ currentPassword, newPassword, updateType: 'password' });
 }
 
-// Send update to backend
 async function sendUpdate(payload) {
-    const userId = localStorage.getItem('user_id');
+    const user = getUser();
+    if (!user) { window.location.href = '/pages/Login.html'; return; }
 
-    // Fill missing fields with current values
     const data = {
-        userId,
-        full_name: payload.full_name || localStorage.getItem('user_name'),
-        email: payload.email || localStorage.getItem('user_email'),
+        userId: user.id,
+        full_name: payload.full_name || user.full_name,
+        email: payload.email || user.email,
         currentPassword: payload.currentPassword || null,
         newPassword: payload.newPassword || null,
         updateType: payload.updateType
@@ -140,29 +122,25 @@ async function sendUpdate(payload) {
         const result = await response.json();
 
         if (response.ok) {
-            // Update localStorage
-            if (data.full_name) {
-                localStorage.setItem('user_name', data.full_name);
+            const updated = { ...user };
+            if (payload.updateType === 'name') {
+                updated.full_name = data.full_name;
                 document.getElementById('profileName').textContent = data.full_name;
                 document.getElementById('avatarInitial').textContent = data.full_name.charAt(0).toUpperCase();
-                document.getElementById('currentNameDisplay').textContent = 'Current: ' + data.full_name;
             }
-            if (data.email) {
-                localStorage.setItem('user_email', data.email);
+            if (payload.updateType === 'email') {
+                updated.email = data.email;
                 document.getElementById('profileEmail').textContent = data.email;
-                document.getElementById('currentEmailDisplay').textContent = 'Current: ' + data.email;
             }
+            localStorage.setItem('user', JSON.stringify(updated));
 
             showSuccess(result.message);
-
-            // Close the section after saving
-            document.querySelectorAll('.section-body.open').forEach(s => s.classList.remove('open'));
-
+            document.querySelectorAll('.form-section.open').forEach(s => s.classList.remove('open'));
+            document.querySelectorAll('.btn-action.active').forEach(b => b.classList.remove('active'));
         } else {
             showError(result.message);
         }
-
-    } catch (error) {
+    } catch {
         showError('Could not connect to server.');
     }
 }

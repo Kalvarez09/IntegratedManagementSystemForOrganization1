@@ -10,8 +10,7 @@
 <body>
 
 <script>
-    const role = localStorage.getItem('user_role');
-    if (!role) window.location.href = '/pages/Login.html';
+    if (!localStorage.getItem('user')) window.location.href = '/pages/Login.html';
 </script>
 
 <div class="profile-card">
