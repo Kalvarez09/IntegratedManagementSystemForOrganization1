@@ -51,9 +51,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             messageBox.style.border = '1px solid rgba(40, 167, 69, 0.4)';
             messageBox.textContent = `Welcome back, ${data.member.full_name}!`;
 
-            // redirect to member page after 1.5 seconds
+            localStorage.setItem('user', JSON.stringify({
+                id: data.member.id,
+                full_name: data.member.full_name,
+                email: data.member.email,
+                role: data.member.role || 'member'
+            }));
+
             setTimeout(() => {
-                window.location.href = '../pages/MemberPage.html';
+                window.location.href = '/pages/Dashboard.html';
             }, 1500);
 
         } else {
