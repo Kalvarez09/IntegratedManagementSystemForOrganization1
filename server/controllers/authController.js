@@ -50,16 +50,20 @@ const loginMember = async (req, res) => {
         }
 
         // SCRUM-82: create session
+        const role = member.role || 'member';
+
         req.session.memberId = member.id;
         req.session.memberName = member.full_name;
         req.session.memberEmail = member.email;
+        req.session.memberRole = role;
 
         res.status(200).json({
             message: 'Login successful',
             member: {
                 id: member.id,
                 full_name: member.full_name,
-                email: member.email
+                email: member.email,
+                role: role
             }
         });
 
@@ -69,4 +73,14 @@ const loginMember = async (req, res) => {
     }
 };
 
-module.exports = { registerMember, loginMember };
+const getMemberCount = async (req, res) => {
+    try {
+        const result = await pool.query('SELECT COUNT(*) AS count FROM members');
+        res.status(200).json({ count: parseInt(result.rows[0].count, 10) });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+module.exports = { registerMember, loginMember, getMemberCount };
