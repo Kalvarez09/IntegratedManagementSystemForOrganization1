@@ -50,8 +50,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
     // submit to backend
     try {
-        const response = await fetch('/api/auth/register', {
-            method: 'POST',
+            const response = await fetch('/auth/register', {            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ full_name, email, password })
         });

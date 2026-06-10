@@ -1,19 +1,22 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const nodemailer = require('nodemailer');
 const pool = require('../database/database');
 
 const transporter = nodemailer.createTransport({
-    host: '74.125.133.108',  // Gmail SMTP IPv4 — bypasses DNS lookup entirely
-    port: 465,
-    secure: true,
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
     auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
     },
     tls: {
         rejectUnauthorized: false,
-        servername: 'smtp.gmail.com'  // still verify against Gmail's cert
+        servername: 'smtp.gmail.com'
     }
 });
 
@@ -54,7 +57,6 @@ const forgotPassword = async (req, res) => {
         );
 
         const resetLink = `${process.env.BASE_URL}/pages/reset-password.html?token=${rawToken}`;
-
         await transporter.sendMail({
             from: `"Your App" <${process.env.SMTP_USER}>`,
             to: email,
