@@ -1,3 +1,21 @@
+function showMessage(boxId, msg, isError) {
+    const box = document.getElementById(boxId);
+    box.style.display = 'block';
+    box.style.padding = '10px';
+    box.style.borderRadius = '10px';
+    box.style.fontSize = '1.1em';
+    if (isError) {
+        box.style.background = 'rgba(220,53,69,0.2)';
+        box.style.color = '#ff6b6b';
+        box.style.border = '1px solid rgba(220,53,69,0.4)';
+    } else {
+        box.style.background = '#28a74533';
+        box.style.color = '#51cf66';
+        box.style.border = '1px solid rgba(40,167,69,0.4)';
+    }
+    box.textContent = msg;
+}
+
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -8,29 +26,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     messageBox.style.display = 'none';
     messageBox.textContent = '';
 
-    let isValid = true;
-    let errorMsg = '';
-
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-        isValid = false;
-        errorMsg = 'Please enter a valid email address.';
+        showMessage('message', 'Please enter a valid email address.', true);
+        return;
     }
 
-    if (isValid && !password) {
-        isValid = false;
-        errorMsg = 'Please enter your password.';
-    }
-
-    if (!isValid) {
-        messageBox.style.display = 'block';
-        messageBox.style.background = '#dc354533';
-        messageBox.style.color = '#ff6b6b';
-        messageBox.style.border = '1px solid #dc354566';
-        messageBox.style.padding = '10px';
-        messageBox.style.borderRadius = '10px';
-        messageBox.style.fontSize = '1.2em';
-        messageBox.textContent = errorMsg;
+    if (!password) {
+        showMessage('message', 'Please enter your password.', true);
         return;
     }
 
@@ -42,16 +45,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
         });
 
         const data = await response.json();
-        messageBox.style.display = 'block';
 
         if (response.ok) {
-            messageBox.style.background = '#28a74533';
-            messageBox.style.color = '#51cf66';
-            messageBox.style.border = '1px solid rgba(40, 167, 69, 0.4)';
-            messageBox.style.padding = '10px';
-            messageBox.style.borderRadius = '10px';
-            messageBox.style.fontSize = '1.2em';
-            messageBox.textContent = `Welcome back, ${data.member.full_name}!`;
+            if (data.status === 'otp_required') {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('otpStep').style.display = 'block';
+                return;
+            }
+
+            showMessage('message', `Welcome back, ${data.member.full_name}!`, false);
 
             localStorage.setItem('user', JSON.stringify({
                 id: data.member.id,
@@ -61,32 +63,60 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
             }));
 
             const role = data.member.role || 'member';
-            const destination = role === 'admin'
-                ? '/pages/Admin/Dashboard.html'
-                : '/pages/Member/Dashboard.html';
-
             setTimeout(() => {
-                window.location.href = destination;
+                window.location.href = role === 'admin'
+                    ? '/pages/Admin/Dashboard.html'
+                    : '/pages/Member/Dashboard.html';
             }, 1500);
 
         } else {
-            messageBox.style.background = 'rgba(220, 53, 69, 0.2)';
-            messageBox.style.color = '#ff6b6b';
-            messageBox.style.border = '1px solid rgba(220, 53, 69, 0.4)';
-            messageBox.style.padding = '10px';
-            messageBox.style.borderRadius = '10px';
-            messageBox.style.fontSize = '1.2em';
-            messageBox.textContent = data.message;
+            showMessage('message', data.message, true);
         }
 
     } catch (error) {
-        messageBox.style.display = 'block';
-        messageBox.style.background = 'rgba(220, 53, 69, 0.2)';
-        messageBox.style.color = '#ff6b6b';
-        messageBox.style.border = '1px solid rgba(220, 53, 69, 0.4)';
-        messageBox.style.padding = '10px';
-        messageBox.style.borderRadius = '10px';
-        messageBox.style.fontSize = '1.2em';
-        messageBox.textContent = 'Could not connect to server.';
+        showMessage('message', 'Could not connect to server.', true);
     }
 });
+
+async function verifyOtp() {
+    const token = document.getElementById('otpCode').value.trim();
+
+    if (!/^\d{6}$/.test(token)) {
+        showMessage('otpMessage', 'Please enter the 6-digit code from your authenticator app.', true);
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/auth/2fa/verify-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showMessage('otpMessage', 'Verified! Redirecting...', false);
+
+            localStorage.setItem('user', JSON.stringify({
+                id: data.member.id,
+                full_name: data.member.full_name,
+                email: data.member.email,
+                role: data.member.role || 'member'
+            }));
+
+            const role = data.member.role || 'member';
+            setTimeout(() => {
+                window.location.href = role === 'admin'
+                    ? '/pages/Admin/Dashboard.html'
+                    : '/pages/Member/Dashboard.html';
+            }, 1000);
+
+        } else {
+            showMessage('otpMessage', data.message, true);
+        }
+
+    } catch (error) {
+        showMessage('otpMessage', 'Could not connect to server.', true);
+    }
+}

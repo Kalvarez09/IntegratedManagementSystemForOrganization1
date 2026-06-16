@@ -1,3 +1,6 @@
+const dns = require('dns');
+dns.setDefaultResultOrder('ipv4first');
+
 const pool = require('../database/database');
 const bcrypt = require('bcrypt');
 const multer = require('multer');
@@ -5,7 +8,21 @@ const { Readable } = require('stream');
 const csv = require('csv-parser');
 const xlsx = require('xlsx');
 const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+    },
+    tls: {
+        rejectUnauthorized: false,
+        servername: 'smtp.gmail.com'
+    }
+});
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -68,28 +85,74 @@ const loginMember = async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // SCRUM-82: create session
         const role = member.role || 'member';
 
-        req.session.memberId = member.id;
-        req.session.memberName = member.full_name;
-        req.session.memberEmail = member.email;
-        req.session.memberRole = role;
+        // SCRUM-104: generate 6-digit email OTP and hold login until verified
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = Date.now() + 5 * 60 * 1000; // 5 minutes
 
-        res.status(200).json({
-            message: 'Login successful',
-            member: {
-                id: member.id,
-                full_name: member.full_name,
-                email: member.email,
-                role: role
-            }
+        req.session.pendingAuth = {
+            memberId: member.id,
+            memberName: member.full_name,
+            memberEmail: member.email,
+            memberRole: role,
+            otp,
+            otpExpiry
+        };
+
+        await transporter.sendMail({
+            from: `"OrgSystem Security" <${process.env.SMTP_USER}>`,
+            to: member.email,
+            subject: 'Your login verification code',
+            html: `
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width:480px; margin:0 auto; padding:32px; background:#f8f9fa; border-radius:12px;">
+                    <h2 style="color:#1a1a2e; margin-bottom:8px;">Login Verification</h2>
+                    <p style="color:#495057; margin-bottom:24px;">Hi ${member.full_name}, use the code below to complete your login.</p>
+                    <div style="background:#ffffff; border:2px solid #dee2e6; border-radius:12px; padding:24px; text-align:center; margin-bottom:24px;">
+                        <span style="font-size:40px; font-weight:700; letter-spacing:12px; font-family:monospace; color:#0f3460;">${otp}</span>
+                    </div>
+                    <p style="color:#6c757d; font-size:13px;">This code expires in <strong>5 minutes</strong>. If you did not attempt to log in, please ignore this email.</p>
+                </div>
+            `
         });
+
+        res.status(200).json({ status: 'otp_required' });
 
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
+};
+
+const verifyLogin2FA = async (req, res) => {
+    const { token } = req.body;
+
+    if (!req.session.pendingAuth) {
+        return res.status(401).json({ message: 'Session expired. Please log in again.' });
+    }
+
+    const { memberId, memberName, memberEmail, memberRole, otp, otpExpiry } = req.session.pendingAuth;
+
+    if (Date.now() > otpExpiry) {
+        req.session.pendingAuth = null;
+        return res.status(401).json({ message: 'Verification code has expired. Please log in again.' });
+    }
+
+    if (String(token).trim() !== otp) {
+        return res.status(401).json({ message: 'Invalid verification code. Please try again.' });
+    }
+
+    // SCRUM-82: create full session after OTP verified
+    req.session.pendingAuth = null;
+    req.session.memberId = memberId;
+    req.session.memberName = memberName;
+    req.session.memberEmail = memberEmail;
+    req.session.memberRole = memberRole;
+
+    res.status(200).json({
+        message: 'Login successful',
+        member: { id: memberId, full_name: memberName, email: memberEmail, role: memberRole }
+    });
 };
 
 const getMemberCount = async (req, res) => {
@@ -101,6 +164,7 @@ const getMemberCount = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 const getAllMembers = async (req, res) => {
     try {
         const result = await pool.query(
@@ -112,7 +176,6 @@ const getAllMembers = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-    
 
 const uploadMembersCsv = async (req, res) => {
     if (!req.file) {
@@ -145,7 +208,6 @@ const uploadMembersCsv = async (req, res) => {
             headers = parsed.length > 0 ? Object.keys(parsed[0]) : [];
         }
 
-        // rest of your existing validation logic stays exactly the same
         if (!headers || headers.length === 0) {
             return res.status(400).json({ success: false, message: 'File is empty or could not be read.' });
         }
@@ -189,6 +251,7 @@ const uploadMembersCsv = async (req, res) => {
         return res.status(400).json({ success: false, message: 'Could not parse file: ' + err.message });
     }
 };
+
 const updateProfile = async (req, res) => {
     const { userId, full_name, email, currentPassword, newPassword, updateType } = req.body;
 
@@ -251,7 +314,8 @@ const updateProfile = async (req, res) => {
         console.error(error);
         res.status(500).json({ message: 'Server error' });
     }
-};    
+};
+
 const addMember = async (req, res) => {
     const { full_name, email, role } = req.body;
 
@@ -312,4 +376,4 @@ const removeMember = async (req, res) => {
     }
 };
 
-module.exports = { registerMember, loginMember, getMemberCount, updateProfile, getAllMembers, upload, uploadMembersCsv, addMember, removeMember  };
+module.exports = { registerMember, loginMember, verifyLogin2FA, getMemberCount, updateProfile, getAllMembers, upload, uploadMembersCsv, addMember, removeMember };
