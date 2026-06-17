@@ -7,7 +7,7 @@ const SECTIONS = {
         features: ['Data Import', 'Data Validation', 'Migration Tools', 'Audit Logs']
     }
     ,
-    
+
     'documents': {
         icon: 'fas fa-folder-open ',
         title: '5.3 Document Management System',
@@ -93,8 +93,8 @@ function renderHome(user) {
                 </p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-                        `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
-                    ).join('')}
+            `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
+        ).join('')}
                 </div>
             </div>
         `;
@@ -118,8 +118,8 @@ function renderHome(user) {
                 <p class="info-card-body">Here is a preview of what is being built for you:</p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-                        `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
-                    ).join('')}
+            `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
+        ).join('')}
                 </div>
             </div>
         `;
@@ -167,8 +167,8 @@ function renderFutureSection(id) {
             </div>
             <div class="feature-chips">
                 ${data.features.map(f =>
-                    `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
-                ).join('')}
+        `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
+    ).join('')}
             </div>
         </div>
     `;
@@ -271,44 +271,44 @@ async function renderMembersSection() {
     });
 
     document.getElementById('addMemberBtn').addEventListener('click', () => {
-    openModal('addMemberModal');
-    }); 
+        openModal('addMemberModal');
+    });
 
     document.getElementById('csvFileInput').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
-    showUploadStatus('Validating file...', 'info');
+        showUploadStatus('Validating file...', 'info');
 
-    const formData = new FormData();
-    formData.append('file', file);
+        const formData = new FormData();
+        formData.append('file', file);
 
-    try {
-        const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
-        const data = await res.json();
+        try {
+            const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
+            const data = await res.json();
 
-        if (data.success) {
-            showUploadStatus(`${data.message} (${data.rowCount} rows)`, 'success');
-        } else {
-            showUploadStatus(data.message, 'error', data.errors);
+            if (data.success) {
+                showUploadStatus(`${data.message} (${data.rowCount} rows)`, 'success');
+            } else {
+                showUploadStatus(data.message, 'error', data.errors);
+            }
+        } catch {
+            showUploadStatus('Could not connect to server.', 'error');
         }
-    } catch {
-        showUploadStatus('Could not connect to server.', 'error');
-    }
 
-    e.target.value = '';
-});
+        e.target.value = '';
+    });
 
     function showUploadStatus(message, type, errors = null) {
-    const el = document.getElementById('uploadStatus');
-    el.className = `upload-status ${type}`;
-    let html = `<p>${escHtml(message)}</p>`;
-    if (errors && errors.length > 0) {
-        html += `<ul>${errors.map(e => `<li>${escHtml(e)}</li>`).join('')}</ul>`;
+        const el = document.getElementById('uploadStatus');
+        el.className = `upload-status ${type}`;
+        let html = `<p>${escHtml(message)}</p>`;
+        if (errors && errors.length > 0) {
+            html += `<ul>${errors.map(e => `<li>${escHtml(e)}</li>`).join('')}</ul>`;
+        }
+        el.innerHTML = html;
+        el.hidden = false;
     }
-    el.innerHTML = html;
-    el.hidden = false;
-}
 
     document.getElementById('memberSearch').addEventListener('input', e => {
         filterMembers(e.target.value);
@@ -396,9 +396,9 @@ async function executeRemove(memberId) {
 
 async function submitAddMember() {
     const full_name = document.getElementById('newMemberName').value.trim();
-    const email    = document.getElementById('newMemberEmail').value.trim();
-    const role     = document.getElementById('newMemberRole').value;
-    const errorEl  = document.getElementById('addMemberError');
+    const email = document.getElementById('newMemberEmail').value.trim();
+    const role = document.getElementById('newMemberRole').value;
+    const errorEl = document.getElementById('addMemberError');
     const submitBtn = document.getElementById('addMemberSubmitBtn');
 
     errorEl.hidden = true;
@@ -545,10 +545,11 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome(user);
 
     Object.keys(SECTIONS)
-        .filter(id => id !== 'data-migration')
+        .filter(id => id !== 'data-migration' && id !== 'documents')
         .forEach(renderFutureSection);
 
     renderMembersSection();
+    renderDocumentsSection();
 
     // Init interactions
     initSidebar();
@@ -557,3 +558,415 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show home
     navigate('home');
 });
+
+// ============================================================
+//  DOCUMENT MANAGEMENT — add this to the bottom of dashboard.js
+//  (before the closing DOMContentLoaded or at the end of the file)
+// ============================================================
+
+let allDocs = [];
+
+async function renderDocumentsSection() {
+    const user = getUser();
+    const isAdmin = user?.role === 'admin';
+    const el = document.getElementById('section-documents');
+
+    el.innerHTML = `
+        <div class="section-hdr">
+            <div class="section-icon-box"><i class="fas fa-folder-open"></i></div>
+            <div>
+                <h1 class="section-title-text">5.3 Document Management System</h1>
+                <p class="section-scrum-badge">SCRUM-21 · SCRUM-23 · SCRUM-25</p>
+            </div>
+        </div>
+
+        <div class="members-toolbar">
+            <input type="text" id="docSearch" class="member-search-input"
+                placeholder="Search by filename or category...">
+
+            <select id="docCategoryFilter" class="member-search-input" style="max-width:200px; cursor:pointer;">
+                <option value="">All Categories</option>
+                <option value="Uncategorized">Uncategorized</option>
+                <option value="Meeting Minutes">Meeting Minutes</option>
+                <option value="Financial">Financial</option>
+                <option value="Policy">Policy</option>
+                <option value="Announcements">Announcements</option>
+                <option value="Other">Other</option>
+            </select>
+
+            ${isAdmin ? `
+            <button class="action-btn" id="uploadDocBtn" style="
+                max-width:400px; background:#0b1523; border:1px solid #16263b;
+                border-radius:8px; padding:10px 16px; color:var(--text-clr);
+                font-family:monospace; font-size:0.9rem; cursor:pointer;
+            ">
+                <i class="fas fa-upload"></i> Upload Document
+            </button>
+            <input type="file" id="docFileInput" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" hidden>
+            ` : ''}
+        </div>
+
+        <div id="docStatus" class="upload-status" hidden></div>
+
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>Category</th>
+                        <th>Uploaded By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="docsTableBody">
+                    <tr><td colspan="5" class="members-loading">Loading documents...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Upload Modal (admin only) -->
+        ${isAdmin ? `
+        <div class="modal-overlay" id="uploadDocModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Upload Document</h3>
+                    <button class="modal-close" onclick="closeModal('uploadDocModal')">✕</button>
+                </div>
+                <div id="uploadDocError" class="upload-status error" hidden></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Document Title</label>
+                        <input type="text" id="docTitle" class="member-search-input"
+                            placeholder="e.g. Q1 Meeting Minutes" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="docCategory" class="member-search-input" style="max-width:100%; cursor:pointer;">
+                            <option value="Uncategorized">Uncategorized</option>
+                            <option value="Meeting Minutes">Meeting Minutes</option>
+                            <option value="Financial">Financial</option>
+                            <option value="Policy">Policy</option>
+                            <option value="Announcements">Announcements</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>File <span style="color:var(--text-muted);font-size:0.75rem">(PDF, DOCX, XLSX, PNG, JPG — max 20MB)</span></label>
+                        <div id="dropZone" style="
+                            border: 2px dashed #16263b; border-radius:8px; padding:24px;
+                            text-align:center; color:var(--text-secondary); cursor:pointer;
+                            transition: border-color 0.2s; font-family:monospace; font-size:0.85rem;
+                        ">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:1.5rem; margin-bottom:8px; display:block;"></i>
+                            <span id="dropZoneLabel">Click to select or drag & drop a file here</span>
+                        </div>
+                        <input type="file" id="docFileModalInput" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" hidden>
+                    </div>
+                    <div class="form-group" id="accessControlGroup">
+                        <label>Access</label>
+                        <select id="docAccess" class="member-search-input" style="max-width:100%; cursor:pointer;">
+                            <option value="members">Members & Admins</option>
+                            <option value="admin">Admins Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn outline-btn" id="cancelUploadBtn"
+                        onclick="closeModal('uploadDocModal')"
+                        style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                        Cancel
+                    </button>
+                    <button id="submitUploadBtn"
+                        style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;"
+                        onclick="submitDocUpload()">
+                        <i class="fas fa-upload"></i> Upload
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirm Modal -->
+        <div class="modal-overlay" id="deleteDocModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Delete Document</h3>
+                    <button class="modal-close" onclick="closeModal('deleteDocModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--text-primary);margin-bottom:8px">
+                        Are you sure you want to delete <strong id="deleteDocName"></strong>?
+                    </p>
+                    <p style="color:var(--text-secondary);font-size:0.85rem">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('deleteDocModal')"
+                        style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                        Cancel
+                    </button>
+                    <button class="danger-btn" id="confirmDeleteDocBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+
+    // Wire up search + filter
+    document.getElementById('docSearch').addEventListener('input', filterDocs);
+    document.getElementById('docCategoryFilter').addEventListener('change', filterDocs);
+
+    // Admin-only wiring
+    if (isAdmin) {
+        document.getElementById('uploadDocBtn').addEventListener('click', () => {
+            document.getElementById('uploadDocError').hidden = true;
+            document.getElementById('docTitle').value = '';
+            document.getElementById('docFileModalInput').value = '';
+            document.getElementById('dropZoneLabel').textContent = 'Click to select or drag & drop a file here';
+            openModal('uploadDocModal');
+        });
+
+        // Click on drop zone opens file picker
+        document.getElementById('dropZone').addEventListener('click', () => {
+            document.getElementById('docFileModalInput').click();
+        });
+
+        // Also allow clicking the hidden toolbar file input
+        document.getElementById('docFileInput')?.addEventListener('click', () => {
+            document.getElementById('uploadDocBtn').click();
+        });
+
+        // Show chosen filename in drop zone
+        document.getElementById('docFileModalInput').addEventListener('change', e => {
+            const file = e.target.files[0];
+            if (file) {
+                document.getElementById('dropZoneLabel').textContent = `Selected: ${file.name}`;
+                document.getElementById('dropZone').style.borderColor = '#3b82f6';
+            }
+        });
+
+        // Drag and drop
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#3b82f6';
+            dropZone.style.background = '#3b82f610';
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#16263b';
+            dropZone.style.background = 'transparent';
+        });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#16263b';
+            const file = e.dataTransfer.files[0];
+            if (!file) return;
+
+            // Use DataTransfer to properly assign to file input
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            document.getElementById('docFileModalInput').files = dt.files;
+
+            document.getElementById('dropZoneLabel').textContent = `Selected: ${file.name}`;
+            dropZone.style.borderColor = '#3b82f6';
+        });
+    }
+
+    await loadDocuments();
+}
+
+async function loadDocuments() {
+    const tbody = document.getElementById('docsTableBody');
+    try {
+        const res = await fetch('/api/documents');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allDocs = data.documents;
+        renderDocRows(allDocs);
+    } catch {
+        tbody.innerHTML = `<tr><td colspan="5" class="members-loading">Could not load documents.</td></tr>`;
+    }
+}
+
+function renderDocRows(docs) {
+    const user = getUser();
+    const isAdmin = user?.role === 'admin';
+    const tbody = document.getElementById('docsTableBody');
+
+    if (docs.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="members-loading">No documents found.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = docs.map(doc => `
+        <tr>
+            <td>
+                <div class="member-cell">
+                    <div class="member-avatar-sm" style="background:#0d2540; border-color:#1e4a7a;">
+                        <i class="${getDocIcon(doc.filename)}" style="font-size:0.75rem;"></i>
+                    </div>
+                    <span>${escHtml(doc.title || doc.filename)}</span>
+                </div>
+            </td>
+            <td><span class="role-pill member">${escHtml(doc.category || 'Uncategorized')}</span></td>
+            <td>${escHtml(doc.uploader_name || 'Admin')}</td>
+            <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
+            <td style="display:flex; gap:8px; align-items:center;">
+                <button class="tbl-action-btn" title="Download"
+                    onclick="downloadDoc(${doc.id}, '${escHtml(doc.filename)}')">
+                    <i class="fas fa-download"></i>
+                </button>
+                ${isAdmin ? `
+                <button class="tbl-action-btn delete" title="Delete"
+                    onclick="confirmDeleteDoc(${doc.id}, '${escHtml(doc.title || doc.filename)}')">
+                    <i class="fas fa-trash"></i>
+                </button>` : ''}
+            </td>
+        </tr>
+    `).join('');
+}
+
+function getDocIcon(filename) {
+    const ext = filename?.split('.').pop()?.toLowerCase();
+    const icons = {
+        pdf: 'fas fa-file-pdf',
+        docx: 'fas fa-file-word',
+        doc: 'fas fa-file-word',
+        xlsx: 'fas fa-file-excel',
+        xls: 'fas fa-file-excel',
+        png: 'fas fa-file-image',
+        jpg: 'fas fa-file-image',
+        jpeg: 'fas fa-file-image',
+    };
+    return icons[ext] || 'fas fa-file';
+}
+
+function filterDocs() {
+    const query = document.getElementById('docSearch').value.toLowerCase();
+    const category = document.getElementById('docCategoryFilter').value;
+
+    const filtered = allDocs.filter(doc => {
+        const matchesSearch = !query ||
+            (doc.title || doc.filename).toLowerCase().includes(query) ||
+            (doc.category || '').toLowerCase().includes(query);
+        const matchesCat = !category || doc.category === category;
+        return matchesSearch && matchesCat;
+    });
+
+    renderDocRows(filtered);
+}
+
+async function submitDocUpload() {
+    const title = document.getElementById('docTitle').value.trim();
+    const category = document.getElementById('docCategory').value;
+    const access = document.getElementById('docAccess').value;
+    const fileInput = document.getElementById('docFileModalInput');
+    const file = fileInput.files[0];
+    const errorEl = document.getElementById('uploadDocError');
+    const submitBtn = document.getElementById('submitUploadBtn');
+
+    errorEl.hidden = true;
+
+    if (!title) {
+        errorEl.textContent = 'Please enter a document title.';
+        errorEl.hidden = false;
+        return;
+    }
+    if (!file) {
+        errorEl.textContent = 'Please select a file to upload.';
+        errorEl.hidden = false;
+        return;
+    }
+
+    const allowed = ['application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'image/png', 'image/jpeg'];
+    if (!allowed.includes(file.type)) {
+        errorEl.textContent = 'Invalid file type. Allowed: PDF, DOCX, XLSX, PNG, JPG.';
+        errorEl.hidden = false;
+        return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+        errorEl.textContent = 'File exceeds 20MB limit.';
+        errorEl.hidden = false;
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('title', title);
+    formData.append('category', category);
+    formData.append('access', access);
+
+    try {
+        const res = await fetch('/api/documents/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeModal('uploadDocModal');
+            showDocStatus(data.message || 'Document uploaded successfully.', 'success');
+            await loadDocuments();
+        } else {
+            errorEl.textContent = data.error || 'Upload failed.';
+            errorEl.hidden = false;
+        }
+    } catch {
+        errorEl.textContent = 'Could not connect to server.';
+        errorEl.hidden = false;
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-upload"></i> Upload';
+}
+
+async function downloadDoc(docId, filename) {
+    try {
+        const res = await fetch(`/api/documents/download/${docId}`);
+        if (res.status === 403) {
+            showDocStatus('You do not have permission to download this document.', 'error');
+            return;
+        }
+        if (!res.ok) {
+            showDocStatus('File not found or has been removed.', 'error');
+            return;
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+    } catch {
+        showDocStatus('Could not connect to server.', 'error');
+    }
+}
+
+function confirmDeleteDoc(docId, docName) {
+    document.getElementById('deleteDocName').textContent = docName;
+    document.getElementById('confirmDeleteDocBtn').onclick = () => executeDeleteDoc(docId);
+    openModal('deleteDocModal');
+}
+
+async function executeDeleteDoc(docId) {
+    closeModal('deleteDocModal');
+    try {
+        const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
+        const data = await res.json();
+        showDocStatus(data.message || 'Document deleted.', res.ok ? 'success' : 'error');
+        if (res.ok) await loadDocuments();
+    } catch {
+        showDocStatus('Could not connect to server.', 'error');
+    }
+}
+
+function showDocStatus(message, type) {
+    const el = document.getElementById('docStatus');
+    el.className = `upload-status ${type}`;
+    el.innerHTML = `<p>${escHtml(message)}</p>`;
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 4000);
+}
