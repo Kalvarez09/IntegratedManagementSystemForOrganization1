@@ -1095,6 +1095,9 @@ function renderDocRows(docs) {
             <td>${escHtml(doc.uploader_name || 'Admin')}</td>
             <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
             <td style="display:flex; gap:8px; align-items:center;">
+                <a href="DocumentView.html?id=${doc.id}" class="tbl-action-btn" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
                 <button class="tbl-action-btn" title="Download"
                     onclick="downloadDoc(${doc.id}, '${escHtml(doc.filename)}')">
                     <i class="fas fa-download"></i>

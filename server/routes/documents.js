@@ -100,6 +100,43 @@ router.post('/upload', requireAdmin, upload.single('file'), async (req, res) => 
     }
 });
 
+// ─── MIME type map ────────────────────────────────────────────────────────────
+const MIME_TYPES = {
+    pdf:  'application/pdf',
+    docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    png:  'image/png',
+    jpg:  'image/jpeg',
+    jpeg: 'image/jpeg'
+};
+
+// ─── GET /api/documents/preview/:id — serve file inline (for viewer) ─────────
+router.get('/preview/:id', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM documents WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Document not found.' });
+
+        const doc = result.rows[0];
+
+        if (req.session.memberRole !== 'admin' && doc.access === 'admin') {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        const filePath = path.join(UPLOAD_DIR, doc.filepath);
+        if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File not found on server.' });
+
+        const ext  = path.extname(doc.filename).slice(1).toLowerCase();
+        const mime = MIME_TYPES[ext] || 'application/octet-stream';
+
+        res.setHeader('Content-Type', mime);
+        res.setHeader('Content-Disposition', 'inline');
+        res.sendFile(filePath);
+    } catch (err) {
+        console.error('GET /api/documents/preview error:', err);
+        res.status(500).json({ error: 'Server error.' });
+    }
+});
+
 // ─── GET /api/documents/download/:id — download a file ───────────────────────
 router.get('/download/:id', requireAuth, async (req, res) => {
     try {
@@ -124,6 +161,31 @@ router.get('/download/:id', requireAuth, async (req, res) => {
         console.log('File exists: ', fs.existsSync(filePath));
     } catch (err) {
         console.error('GET /api/documents/download error:', err);
+        res.status(500).json({ error: 'Server error.' });
+    }
+});
+
+// ─── GET /api/documents/:id — single document metadata (for viewer page) ─────
+router.get('/:id', requireAuth, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT d.*, m.full_name AS uploader_name
+             FROM documents d
+             LEFT JOIN members m ON d.uploaded_by = m.id
+             WHERE d.id = $1`, [req.params.id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Document not found.' });
+
+        const doc = result.rows[0];
+
+        if (req.session.memberRole !== 'admin' && doc.access === 'admin') {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        const filePath = path.join(UPLOAD_DIR, doc.filepath);
+        res.json({ document: { ...doc, file_exists: fs.existsSync(filePath) } });
+    } catch (err) {
+        console.error('GET /api/documents/:id error:', err);
         res.status(500).json({ error: 'Server error.' });
     }
 });
