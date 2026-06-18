@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Update Profile</title>
-    <link rel="icon" type="image/svg" href="../../images/icon.svg" >
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../../css/updateData.css">
-    <link rel="stylesheet" href="../../css/style.css">
-
+    <link rel="stylesheet" href="../css/updateData.css">
+    
 </head>
 <body>
 
 <script>
-    const user = localStorage.getItem('user');
-    if (!user) window.location.href = '/pages/MainPage/Login.html';
+    const role = localStorage.getItem('user_role');
+    if (!role) window.location.href = '/pages/Login.html';
 </script>
-
 
 <div class="profile-card">
 
@@ -31,19 +28,19 @@
     <!-- 3 Action Buttons -->
     <div class="action-buttons">
         <button class="btn-action" onclick="showSection('nameSection', this)">
-             Change Name
+            👤 Change Name
         </button>
         <button class="btn-action" onclick="showSection('emailSection', this)">
-             Change Email
+            ✉️ Change Email
         </button>
         <button class="btn-action" onclick="showSection('passwordSection', this)">
-             Change Password
+            🔒 Change Password
         </button>
     </div>
 
     <!-- Name Section -->
     <div class="form-section" id="nameSection">
-        <h5> Update Full Name</h5>
+        <h5>👤 Update Full Name</h5>
         <div class="mb-3">
             <label class="form-label">New Full Name</label>
             <input type="text" id="full_name" class="form-control" placeholder="Enter your full name">
@@ -54,7 +51,7 @@
 
     <!-- Email Section -->
     <div class="form-section" id="emailSection">
-        <h5> Update Email Address</h5>
+        <h5>✉️ Update Email Address</h5>
         <div class="mb-3">
             <label class="form-label">New Email Address</label>
             <input type="email" id="email" class="form-control" placeholder="Enter new email">
@@ -65,7 +62,7 @@
 
     <!-- Password Section -->
     <div class="form-section" id="passwordSection">
-        <h5> Update Password</h5>
+        <h5>🔒 Update Password</h5>
         <div class="mb-3">
             <label class="form-label">Current Password</label>
             <input type="password" id="currentPassword" class="form-control"
@@ -94,6 +91,6 @@
 
 </div>
 
-<script src="../../js/updateProfile.js"></script>
+<script src="../js/updateProfile.js"></script>
 </body>
 </html>

@@ -56,7 +56,7 @@ const forgotPassword = async (req, res) => {
             [hashedToken, expiresAt, userId]
         );
 
-        const resetLink = `${process.env.BASE_URL}/pages/MainPage/reset-password.html?token=${rawToken}`;
+        const resetLink = `${process.env.BASE_URL}/pages/reset-password.html?token=${rawToken}`;
         await transporter.sendMail({
             from: `"Your App" <${process.env.SMTP_USER}>`,
             to: email,
@@ -66,10 +66,10 @@ const forgotPassword = async (req, res) => {
     <p>We received a request to reset your password.</p>
     <p>
       <a href="${resetLink}" style="
-        display:inline-block; padding:0.65rem 0.5rem;
-        background:linear-gradient(175deg, #0f3460, #000000); color:#fff;
-        text-decoration:none; border-radius:10px;
-        font-family:monospace, Arial,sans-serif; border-color: #000000;
+        display:inline-block; padding:12px 24px;
+        background:#1a1a1a; color:#fff;
+        text-decoration:none; border-radius:4px;
+        font-family:Arial,sans-serif;
       ">Reset my password</a>
     </p>
     <p>This link expires in 1 hour. If you didn't request this, you can safely ignore this email.</p>
