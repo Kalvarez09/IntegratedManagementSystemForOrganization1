@@ -1,15 +1,20 @@
 // Load current user data
 window.addEventListener('load', () => {
-    const name = localStorage.getItem('user_name') || '';
-    const email = localStorage.getItem('user_email') || '';
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const name = user.full_name || '';
+    const email = user.email || '';
 
     document.getElementById('profileName').textContent = name;
     document.getElementById('profileEmail').textContent = email;
     document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
     document.getElementById('full_name').value = name;
     document.getElementById('email').value = email;
-    document.getElementById('currentNameDisplay').textContent = 'Current: ' + name;
-    document.getElementById('currentEmailDisplay').textContent = 'Current: ' + email;
+
+    const currentNameEl = document.getElementById('currentNameDisplay');
+    if (currentNameEl) currentNameEl.textContent = 'Current: ' + name;
+
+    const currentEmailEl = document.getElementById('currentEmailDisplay');
+    if (currentEmailEl) currentEmailEl.textContent = 'Current: ' + email;
 });
 
 function showSection(sectionId, btn) {
@@ -43,8 +48,8 @@ function showError(msg) {
 
 // Go back to dashboard
 function goBack() {
-    const role = localStorage.getItem('user_role');
-    window.location.href = role === 'admin' ? '/ADMIN/index.html' : '/pages/MemberPage.html';
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    window.location.href = user.role === 'admin' ? '../Admin/Dashboard.html' : '../Member/Dashboard.html';
 }
 
 // Save Name only
@@ -118,13 +123,13 @@ async function savePassword() {
 
 // Send update to backend
 async function sendUpdate(payload) {
-    const userId = localStorage.getItem('user_id');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
 
-    // Fill missing fields with current values
     const data = {
         userId,
-        full_name: payload.full_name || localStorage.getItem('user_name'),
-        email: payload.email || localStorage.getItem('user_email'),
+        full_name: payload.full_name || user.full_name,
+        email: payload.email || user.email,
         currentPassword: payload.currentPassword || null,
         newPassword: payload.newPassword || null,
         updateType: payload.updateType
@@ -140,28 +145,28 @@ async function sendUpdate(payload) {
         const result = await response.json();
 
         if (response.ok) {
-            // Update localStorage
-            if (data.full_name) {
-                localStorage.setItem('user_name', data.full_name);
-                document.getElementById('profileName').textContent = data.full_name;
-                document.getElementById('avatarInitial').textContent = data.full_name.charAt(0).toUpperCase();
-                document.getElementById('currentNameDisplay').textContent = 'Current: ' + data.full_name;
-            }
-            if (data.email) {
-                localStorage.setItem('user_email', data.email);
-                document.getElementById('profileEmail').textContent = data.email;
-                document.getElementById('currentEmailDisplay').textContent = 'Current: ' + data.email;
-            }
+    if (data.full_name) {
+        user.full_name = data.full_name;
+        document.getElementById('profileName').textContent = data.full_name;
+        document.getElementById('avatarInitial').textContent = data.full_name.charAt(0).toUpperCase();
 
-            showSuccess(result.message);
+        const currentNameEl = document.getElementById('currentNameDisplay');
+        if (currentNameEl) currentNameEl.textContent = 'Current: ' + data.full_name;
+    }
+    if (data.email) {
+        user.email = data.email;
+        document.getElementById('profileEmail').textContent = data.email;
 
-            // Close the section after saving
-            document.querySelectorAll('.section-body.open').forEach(s => s.classList.remove('open'));
+        const currentEmailEl = document.getElementById('currentEmailDisplay');
+        if (currentEmailEl) currentEmailEl.textContent = 'Current: ' + data.email;
+    }
+    localStorage.setItem('user', JSON.stringify(user));
 
-        } else {
-            showError(result.message);
-        }
-
+    showSuccess(result.message);
+    document.querySelectorAll('.section-body.open').forEach(s => s.classList.remove('open'));
+} else {
+    showError(result.message);
+}
     } catch (error) {
         showError('Could not connect to server.');
     }

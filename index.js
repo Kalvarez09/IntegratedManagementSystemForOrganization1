@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const documentRoutes = require('./server/routes/documents')
 
 const authRoutes = require('./server/routes/auth');
 
@@ -23,8 +24,10 @@ app.use(express.static(path.join(__dirname, 'client')));
 
 app.use('/api/auth', authRoutes);
 
+app.use('/api/documents', documentRoutes);
+
 app.get('/', (req, res) => {
-    res.redirect('/pages/Login.html');
+    res.redirect('/pages/MainPage/Login.html');
 });
 
 const PORT = process.env.PORT || 3000;
