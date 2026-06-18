@@ -5,6 +5,7 @@ const path = require('path');
 const session = require('express-session');
 
 const authRoutes = require('./server/routes/auth');
+const documentRoutes = require('./server/routes/documents');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'client')));
 
 app.use('/api/auth', authRoutes);
+app.use('/api/documents', documentRoutes);
 
 app.get('/', (req, res) => {
     res.redirect('/pages/Login.html');

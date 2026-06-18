@@ -3,3 +3,18 @@ node_modules/
 .DS_Store
 package-lock.json
 .vscode/
+
+# Ignore uploads folder (Multer temp files)
+uploads/
+
+# Ignore copy files and folders
+*copy*
+* copy*
+*copy/
+* copy/
+
+# Ignore Windows thumbnail cache
+Thumbs.db
+
+# Ignore Claude folder
+.claude/

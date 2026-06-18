@@ -211,6 +211,45 @@ async function renderMembersSection() {
     </div>
 
     <div id="uploadStatus" class="upload-status" hidden></div>
+    <div id="importAction" style="display:none; align-items:center; gap:10px; margin-top:14px;">
+        <button id="confirmImportBtn" style="
+            background: linear-gradient(135deg, #064e3b, #059669);
+            border: 1px solid #10b98166;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #ecfdf5;
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 14px #10b98133, inset 0 1px 0 #10b98122;
+            transition: box-shadow 0.2s, transform 0.1s;
+        " onmouseover="this.style.boxShadow='0 0 22px #10b98155, inset 0 1px 0 #10b98122'"
+           onmouseout="this.style.boxShadow='0 0 14px #10b98133, inset 0 1px 0 #10b98122'">
+            <i class="fas fa-file-import"></i>
+            <span id="confirmImportLabel">Import</span>
+        </button>
+        <button id="cancelImportBtn" style="
+            background: #0b1523;
+            border: 1px solid #16263b;
+            border-radius: 8px;
+            padding: 10px 18px;
+            color: #94a3b8;
+            font-family: monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: border-color 0.2s, color 0.2s;
+        " onmouseover="this.style.borderColor='#334155';this.style.color='#f1f5f9'"
+           onmouseout="this.style.borderColor='#16263b';this.style.color='#94a3b8'">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+    </div>
 
     <div class="members-table-wrapper">
         <table class="members-table">
@@ -289,10 +328,53 @@ async function renderMembersSection() {
     openModal('addMemberModal');
     }); 
 
+    let pendingImportRows = [];
+
+    function showImportButton(count) {
+        document.getElementById('confirmImportLabel').textContent = `Import ${count} row(s)`;
+        document.getElementById('importAction').style.display = 'flex';
+    }
+
+    function hideImportButton() {
+        document.getElementById('importAction').style.display = 'none';
+        pendingImportRows = [];
+    }
+
+    document.getElementById('cancelImportBtn').addEventListener('click', () => {
+        hideImportButton();
+        document.getElementById('uploadStatus').hidden = true;
+    });
+
+    document.getElementById('confirmImportBtn').addEventListener('click', async () => {
+        if (!pendingImportRows.length) return;
+        const btn = document.getElementById('confirmImportBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
+
+        try {
+            const res = await fetch('/api/auth/import-members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rows: pendingImportRows })
+            });
+            const data = await res.json();
+            hideImportButton();
+            showUploadStatus(data.message, data.summary?.failed?.length > 0 ? 'error' : 'success',
+                null, null, null, data.summary);
+            if (data.summary?.inserted?.length > 0) await loadMembers();
+        } catch {
+            showUploadStatus('Could not connect to server.', 'error');
+        }
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-file-import"></i> <span id="confirmImportLabel">Import</span>';
+    });
+
     document.getElementById('csvFileInput').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
+    hideImportButton();
     showUploadStatus('Validating file...', 'info');
 
     const formData = new FormData();
@@ -303,9 +385,14 @@ async function renderMembersSection() {
         const data = await res.json();
 
         if (data.success) {
-            showUploadStatus(`${data.message} (${data.rowCount} rows)`, 'success');
+            const hasIssues = (data.duplicates?.length > 0) || (data.missingRows?.length > 0);
+            showUploadStatus(data.message, hasIssues ? 'error' : 'success', null, data.duplicates, data.missingRows, data.standardizedRows);
+            if (data.standardizedRows?.length > 0) {
+                pendingImportRows = data.standardizedRows;
+                showImportButton(data.standardizedRows.length);
+            }
         } else {
-            showUploadStatus(data.message, 'error', data.errors);
+            showUploadStatus(data.message, 'error', data.errors, data.duplicates, data.missingRows);
         }
     } catch {
         showUploadStatus('Could not connect to server.', 'error');
@@ -505,13 +592,121 @@ async function submitAddMember() {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Add Member';
 }
- function showUploadStatus(message, type, errors = null) {
+ function showUploadStatus(message, type, errors = null, duplicates = null, missingRows = null, summary = null) {
     const el = document.getElementById('uploadStatus');
     el.className = `upload-status ${type}`;
-    let html = `<p>${escHtml(message)}</p>`;
+
+    const sectionStyle = 'margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15);';
+    const labelStyle   = 'font-weight:700; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px;';
+    const listStyle    = 'margin:4px 0 0 0; padding-left:18px;';
+    const itemStyle    = 'margin-bottom:2px; font-size:0.85rem;';
+    const tableStyle   = 'width:100%; border-collapse:collapse; font-size:0.82rem;';
+    const thStyle      = 'text-align:left; padding:4px 8px; font-weight:600; opacity:0.75;';
+    const tdStyle      = 'padding:4px 8px;';
+
+    let html = `<p style="font-weight:600; margin-bottom:4px;">${escHtml(message)}</p>`;
+
+    // Validation errors
     if (errors && errors.length > 0) {
-        html += `<ul>${errors.map(e => `<li>${escHtml(e)}</li>`).join('')}</ul>`;
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Validation errors (${errors.length})</p>`;
+        html += `<ul style="${listStyle}">${errors.map(e => `<li style="${itemStyle}">${escHtml(e)}</li>`).join('')}</ul>`;
+        html += `</div>`;
     }
+
+    // Duplicates removed
+    if (duplicates && duplicates.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Duplicates removed (${duplicates.length})</p>`;
+        html += `<ul style="${listStyle}">${duplicates.map(d =>
+            `<li style="${itemStyle}">Row ${d.row}: <strong>${escHtml(d.email)}</strong> — ${escHtml(d.reason)}</li>`
+        ).join('')}</ul>`;
+        html += `</div>`;
+    }
+
+    // Missing required fields
+    if (missingRows && missingRows.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Rows skipped — missing required fields (${missingRows.length})</p>`;
+        html += `<ul style="${listStyle}">${missingRows.map(r =>
+            `<li style="${itemStyle}">Row ${r.row}: missing <strong>${r.fields.map(f => escHtml(f)).join(', ')}</strong></li>`
+        ).join('')}</ul>`;
+        html += `</div>`;
+    }
+
+    // Preview table (before import) — standardizedRows passed as summary when it's an array
+    if (Array.isArray(summary) && summary.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle} color:#4ade80;">Data ready to import (${summary.length} rows)</p>`;
+        html += `<div style="max-height:220px; overflow-y:auto; overflow-x:auto; border-radius:6px;">
+            <table style="${tableStyle} color:#4ade80;">
+                <thead><tr style="border-bottom:1px solid rgba(74,222,128,0.3); position:sticky; top:0; background:#0b1a2e;">
+                    <th style="${thStyle}">#</th>
+                    <th style="${thStyle}">Full Name</th>
+                    <th style="${thStyle}">Email</th>
+                    <th style="${thStyle}">Role</th>
+                </tr></thead>
+                <tbody>${summary.map((r, i) => `
+                    <tr style="border-bottom:1px solid rgba(74,222,128,0.1);">
+                        <td style="${tdStyle} opacity:0.6;">${i + 1}</td>
+                        <td style="${tdStyle}">${escHtml(r.full_name)}</td>
+                        <td style="${tdStyle}">${escHtml(r.email)}</td>
+                        <td style="${tdStyle}">${escHtml(r.role || 'member')}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+        html += `</div>`;
+    }
+
+    // Import result summary (after import)
+    if (summary && !Array.isArray(summary)) {
+        // Successfully inserted — green table
+        if (summary.inserted?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#4ade80;">Successfully imported (${summary.inserted.length})</p>`;
+            html += `<div style="max-height:220px; overflow-y:auto; overflow-x:auto; border-radius:6px;">
+                <table style="${tableStyle} color:#4ade80;">
+                    <thead><tr style="border-bottom:1px solid rgba(74,222,128,0.3); position:sticky; top:0; background:#0b1a2e;">
+                        <th style="${thStyle}">#</th>
+                        <th style="${thStyle}">Full Name</th>
+                        <th style="${thStyle}">Email</th>
+                        <th style="${thStyle}">Role</th>
+                    </tr></thead>
+                    <tbody>${summary.inserted.map((r, i) => `
+                        <tr style="border-bottom:1px solid rgba(74,222,128,0.1);">
+                            <td style="${tdStyle} opacity:0.6;">${i + 1}</td>
+                            <td style="${tdStyle}">${escHtml(r.full_name)}</td>
+                            <td style="${tdStyle}">${escHtml(r.email)}</td>
+                            <td style="${tdStyle}">${escHtml(r.role)}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+            html += `</div>`;
+        }
+
+        // Skipped at DB level — orange
+        if (summary.skipped?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#fb923c;">Skipped at import (${summary.skipped.length})</p>`;
+            html += `<ul style="${listStyle}">${summary.skipped.map(r =>
+                `<li style="${itemStyle} color:#fb923c;"><strong>${escHtml(r.full_name)}</strong> (${escHtml(r.email)}) — ${escHtml(r.reason)}</li>`
+            ).join('')}</ul>`;
+            html += `</div>`;
+        }
+
+        // Failed — red
+        if (summary.failed?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#f87171;">Failed to insert (${summary.failed.length})</p>`;
+            html += `<ul style="${listStyle}">${summary.failed.map(r =>
+                `<li style="${itemStyle} color:#f87171;"><strong>${escHtml(r.full_name)}</strong> (${escHtml(r.email)}) — ${escHtml(r.reason)}</li>`
+            ).join('')}</ul>`;
+            html += `</div>`;
+        }
+    }
+
     el.innerHTML = html;
     el.hidden = false;
 }
