@@ -50,7 +50,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
     // submit to backend
     try {
-            const response = await fetch('/api/auth/register', {            method: 'POST',
+            const response = await fetch('/auth/register', {            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ full_name, email, password })
         });
@@ -67,7 +67,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
 
             // redirect to member page after 1.5 seconds (SCRUM-78)
             setTimeout(() => {
-                window.location.href = '../Member/Dashboard.html';
+                window.location.href = '../pages/MemberPage.html';
             }, 1500);
 
         } else {

@@ -24,7 +24,7 @@ app.use(express.static(path.join(__dirname, 'client')));
 app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
-    res.redirect('/pages/MainPage/Login.html');
+    res.redirect('/pages/Login.html');
 });
 
 const PORT = process.env.PORT || 3000;
