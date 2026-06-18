@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin — Organization X</title>
+    <link rel="stylesheet" href="../../css/dashboard.css">
+    <link rel="icon" type="image/svg" href="../../images/icon.svg" >
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-mark">X</div>
+                <span class="brand-text">Organization X</span>
+            </div>
+            <button class="collapse-btn" id="collapseBtn" title="Toggle sidebar">
+                <i class="fas fa-chevron-left" id="collapseIcon"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item active" data-section="home" title="Dashboard">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="data-migration" title="5.2 Data Preprocessing">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-database nav-icon"></i>
+                        <span class="nav-label">Data Preprocessing</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="documents" title="5.3 Document Management">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-folder-open nav-icon"></i>
+                        <span class="nav-label">Document Management</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="e-voting" title="5.4 Electronic Voting">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-square-poll-vertical nav-icon"></i>
+                        <span class="nav-label">Electronic Voting</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="whatsapp" title="5.51 WhatsApp Analytics">
+                    <a class="nav-link" href="#">
+                        <i class="fab fa-whatsapp nav-icon"></i>
+                        <span class="nav-label">WhatsApp Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="notifications" title="5.5.2 Smart Notifications">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span class="nav-label">Smart Notifications</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="meetings" title="5.6 Meeting Management">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-users nav-icon"></i>
+                        <span class="nav-label">Meeting Management</span>
+                    </a>
+                </li>
+                <li class="nav-item" data-section="financial" title="5.7 Financial Records">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <span class="nav-label">Financial Records</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- ========== MAIN WRAPPER ========== -->
+    <div class="main-wrapper" id="mainWrapper">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h2 class="page-title" id="pageTitle">Dashboard</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="profile-container" id="profileContainer">
+                    <div class="avatar" id="avatarEl">
+                        <span id="avatarInitials">U</span>
+                    </div>
+                    <div class="profile-meta">
+                        <span class="profile-name-text" id="profileName">User</span>
+                        <span class="role-badge" id="roleBadge">Member</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron-arrow" id="dropdownChevron"></i>
+
+                    <!-- Dropdown -->
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <button class="dropdown-item" id="updateDataBtn">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Update Data</span>
+                        </button>
+                        <div class="dropdown-sep"></div>
+                        <button class="dropdown-item logout-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="content-area" id="contentArea">
+            <section class="section" id="section-home"></section>
+<section class="section" id="section-data-migration"></section>
+            <section class="section" id="section-documents"></section>
+            <section class="section" id="section-e-voting"></section>
+            <section class="section" id="section-whatsapp"></section>
+            <section class="section" id="section-notifications"></section>
+            <section class="section" id="section-meetings"></section>
+            <section class="section" id="section-financial"></section>
+        </main>
+    </div>
+
+    <script src="../../js/dashboard.js"></script>
+</body>
+</html>
