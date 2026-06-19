@@ -139,3 +139,71 @@ figcaption{
 .navbar li{
     float: left;
 }
+
+.home-section,.features-section {
+    padding: 60px 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.container h2 {
+    font-size: 32px;
+    margin-bottom: 24px;
+}
+
+.container > p {
+    text-align: left;
+    line-height: 1.7;
+    margin-bottom: 16px;
+    color: #d1d9e3;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-top: 40px;
+    text-align: left;
+}
+
+.feature-card {
+    background: #0b1523cc;
+    border: 1px solid #16263b;
+    border-radius: 14px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.feature-card:hover {
+    border-color: #3b82f6;
+    transform: translateY(-3px);
+}
+
+.feature-card h3 {
+    font-size: 20px;
+    margin-bottom: 12px;
+    text-shadow: 1px 1px #2982f7;
+}
+
+.feature-card p {
+    font-family: sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #b0b3c1;
+    margin: 0;
+}
+
+/* Responsive: stack cards on smaller screens */
+@media (max-width: 800px) {
+    .feature-grid {
+        grid-template-columns: 1fr;
+    }
+    .container > p,
+    .feature-card p {
+        text-align: left;
+    }
+}
