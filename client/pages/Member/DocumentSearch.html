@@ -199,14 +199,23 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       try {
-        const res  = await fetch('/api/documents');
-        if (!res.ok) throw new Error();
+        const res = await fetch('/api/documents');
+        if (res.status === 401) {
+          window.location.href = '/pages/MainPage/Login.html';
+          return;
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          document.getElementById('docTableBody').innerHTML =
+            `<tr><td colspan="5" class="doc-empty">${err.error || 'Could not load documents.'}</td></tr>`;
+          return;
+        }
         const data = await res.json();
-        allDocs = data.documents;
+        allDocs = data.documents || [];
         renderRows(allDocs);
       } catch {
         document.getElementById('docTableBody').innerHTML =
-          `<tr><td colspan="5" class="doc-empty">Could not load documents.</td></tr>`;
+          `<tr><td colspan="5" class="doc-empty">Could not connect to server.</td></tr>`;
       }
     });
   </script>

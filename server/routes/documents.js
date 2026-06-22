@@ -89,7 +89,7 @@ router.post('/upload', requireAdmin, upload.single('file'), async (req, res) => 
         await pool.query(
             `INSERT INTO documents (title, filename, filepath, category, access, uploaded_by, uploaded_at)
              VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
-            [title, req.file.originalname, req.file.filename, category, access, req.session.memberID]
+            [title, req.file.originalname, req.file.filename, category, access, req.session.memberId]
         );
         res.json({ message: 'Document uploaded successfully.' });
     } catch (err) {

@@ -106,18 +106,60 @@
               <th style="min-width:100px;">Type</th>
               <th style="min-width:80px;">Duration</th>
               <th style="min-width:110px;">Status</th>
+              <th style="min-width:120px;">Minutes</th>
             </tr>
           </thead>
           <tbody id="memberMeetingsBody">
-            <tr><td colspan="6" class="members-loading">Loading meetings...</td></tr>
+            <tr><td colspan="7" class="members-loading">Loading meetings...</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Read-only Minutes Modal -->
+      <div class="modal-overlay" id="memberMinutesModal" hidden>
+        <div class="modal-card" style="max-width:620px;width:90vw;">
+          <div class="modal-header">
+            <div>
+              <h3 id="memberMinutesTitle">Meeting Minutes</h3>
+              <p id="memberMinutesMeta" style="font-size:0.78rem;color:#94a3b8;margin:3px 0 0;font-family:monospace;"></p>
+            </div>
+            <button class="modal-close" onclick="document.getElementById('memberMinutesModal').hidden=true">✕</button>
+          </div>
+          <div class="modal-body">
+            <textarea id="memberMinutesText" rows="12" readonly style="
+              width:100%; background:#0b1523; border:1px solid #16263b;
+              border-radius:8px; padding:12px 16px; color:#e6e6ef;
+              font-family:monospace; font-size:0.85rem; resize:vertical;
+              outline:none; box-sizing:border-box; line-height:1.6;
+              cursor:default;
+            "></textarea>
+          </div>
+          <div class="modal-footer">
+            <button onclick="document.getElementById('memberMinutesModal').hidden=true" style="
+              background:#0b1523;border:1px solid #16263b;border-radius:8px;
+              padding:10px 20px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+              Close
+            </button>
+          </div>
+        </div>
       </div>
     </main>
 
     <script>
     (function () {
       const STORAGE_KEY = 'org_x_meetings';
+
+      function openMinutesModal(id) {
+        const m = allMeetings.find(mtg => String(mtg.id) === String(id));
+        if (!m) return;
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+        document.getElementById('memberMinutesTitle').textContent = m.title;
+        document.getElementById('memberMinutesMeta').textContent = `${dateStr} at ${timeStr}`;
+        document.getElementById('memberMinutesText').value = m.minutes || '';
+        document.getElementById('memberMinutesModal').hidden = false;
+      }
 
       function esc(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -144,13 +186,19 @@
         const tbody = document.getElementById('memberMeetingsBody');
         if (!tbody) return;
         if (!meetings || meetings.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="members-loading">No meetings have been scheduled yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="7" class="members-loading">No meetings have been scheduled yet.</td></tr>';
           return;
         }
         tbody.innerHTML = meetings.map(m => {
           const d = new Date(`${m.date}T${m.time}`);
           const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
           const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+          const hasMinutes = !!(m.minutes && m.minutes.trim());
+          const safeTitle = esc(m.title);
+          const safeMeta = `${dateStr} at ${timeStr}`;
+          const minutesCell = hasMinutes
+            ? `<button class="view-minutes-btn" data-meeting-id="${m.id}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-family:monospace;font-size:0.75rem;font-weight:600;cursor:pointer;background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;white-space:nowrap;"><i class="fas fa-file-lines"></i> View</button>`
+            : '<span style="color:#475569;font-size:0.8rem;font-family:monospace;">—</span>';
           return `<tr>
             <td>
               <div class="member-cell">
@@ -175,6 +223,7 @@
             <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span></td>
             <td style="color:#94a3b8;font-family:monospace;font-size:0.82rem;white-space:nowrap;">${esc(m.duration)}</td>
             <td><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;${statusStyle[m.status]||''}"><i class="${statusIcon[m.status]||'fas fa-circle'}" style="font-size:9px;"></i>${m.status}</span></td>
+            <td>${minutesCell}</td>
           </tr>`;
         }).join('');
       }
@@ -195,6 +244,11 @@
         renderRows(allMeetings);
         document.getElementById('memberMeetingSearch').addEventListener('input', applyFilter);
         document.getElementById('memberMeetingFilter').addEventListener('change', applyFilter);
+
+        document.getElementById('memberMeetingsBody').addEventListener('click', function(e) {
+          const btn = e.target.closest('.view-minutes-btn');
+          if (btn) openMinutesModal(btn.dataset.meetingId);
+        });
       });
     })();
     </script>
