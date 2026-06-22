@@ -7,6 +7,8 @@ const session = require('express-session');
 const authRoutes = require('./server/routes/auth');
 const documentRoutes = require('./server/routes/documents');
 
+const pollRoutes = require('./server/routes/polls');
+
 const app = express();
 
 // Middleware
@@ -34,3 +36,5 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+app.use('/api/polls', pollRoutes);

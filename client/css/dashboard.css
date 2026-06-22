@@ -965,23 +965,10 @@ html, body {
     cursor: pointer;
     transition: background 0.2s;
 }
-.danger-btn:hover { background: #b91c1c; }
-#cancel-btn{
+.danger-btn:hover { 
+    background: #b91c1c;
+ }
 
-    max-width: 400px;
-    background: #0b1523;
-    border: 1px solid #16263b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text-clr);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-#cancel-btn:hover{
-     background:linear-gradient(175deg, #0f3460, #545a5f);
-    color: white;
-    cursor: pointer;
-}
 .add-btn{
     background:linear-gradient(175deg, #0f3460, #545a5f);
     color: white;
@@ -995,7 +982,7 @@ html, body {
     font-family: monospace; 
 }
 
-#addMemberSubmitBtn{
+#addMemberSubmitBtn,#submitUploadBtn,#createPollSubmitBtn{
     max-width: 400px;
     background: #0b1523;
     border: 1px solid #16263b;
@@ -1005,7 +992,7 @@ html, body {
     font-family: monospace;
     font-size: 0.9rem;
 }
-#addMemberSubmitBtn:hover{
+#addMemberSubmitBtn:hover,#submitUploadBtn:hover,#createPollSubmitBtn:hover{
     background:linear-gradient(175deg, #0f3460, #2e844c);
     color: white;
     cursor: pointer;
@@ -1049,3 +1036,53 @@ html, body {
     background: #101C2E;
     color: var(--text-clr);
 }
+/* =============================================
+                    VOTING
+   ============================================= */
+
+.poll-status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: #101C2E;
+    color: var(--secondary-text-clr);
+    border: 1px solid #16263b;
+}
+.poll-status-pill.success {
+    background: #10b98124;
+    color: #34d399;
+    border: 1px solid #10b98147;
+}
+.poll-status-pill.info {
+    background: #3b82f624;
+    color: #60a5fa;
+    border: 1px solid #3b82f647;
+}
+
+/* ── Poll option rows in create modal ────────────────── */
+.poll-option-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+#createPollBtn{
+    max-width: 400px;
+    background: #0b1523;
+    border: 1px solid #16263b;
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: var(--text-clr);
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+#createPollBtn:hover{
+    background:linear-gradient(175deg, #0f3460, #2e844c);
+    color: white;
+    cursor: pointer;
+}
+
