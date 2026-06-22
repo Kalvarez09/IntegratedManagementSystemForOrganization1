@@ -252,15 +252,61 @@ function renderMeetingsSection() {
             )}
         </div>
 
-        <!-- SCRUM-54: Meeting Minutes -->
+        <!-- SCRUM-54: Meeting Minutes (fully implemented) -->
         <div class="meetings-tab-panel" id="tab-minutes">
-            ${meetingComingSoonCard(
-                'fas fa-file-lines',
-                'Meeting Minutes',
-                'SCRUM-54',
-                'Record and publish official meeting minutes during or after each session. Decisions, action items, and outcomes are documented for full organizational transparency.',
-                ['Live Minute Recording', 'Decision Log', 'Action Items Tracker', 'Minutes Distribution']
-            )}
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#e6e6ef;font-size:1.1rem;font-family:monospace;font-weight:700;margin:0 0 4px;">
+                    <i class="fas fa-file-lines" style="color:#60a5fa;margin-right:8px;"></i>Meeting Minutes
+                </h2>
+                <p style="color:#94a3b8;font-size:0.82rem;font-family:monospace;margin:0;">
+                    SCRUM-54 · Record and publish official minutes for each meeting.
+                </p>
+            </div>
+
+            <div id="minutesTabContent">
+                <p style="color:#94a3b8;font-family:monospace;padding:20px 0;text-align:center;">Loading...</p>
+            </div>
+
+            <!-- Record Minutes Modal -->
+            <div class="modal-overlay" id="minutesModal" hidden>
+                <div class="modal-card" style="max-width:620px;width:90vw;">
+                    <div class="modal-header">
+                        <div>
+                            <h3 id="minutesModalMeeting">Record Minutes</h3>
+                            <p id="minutesModalMeta" style="font-size:0.78rem;color:#94a3b8;margin:3px 0 0;font-family:monospace;"></p>
+                        </div>
+                        <button class="modal-close" onclick="document.getElementById('minutesModal').hidden=true">✕</button>
+                    </div>
+                    <div id="minutesModalError" class="upload-status error" hidden></div>
+                    <input type="hidden" id="minutesMeetingId">
+                    <div class="modal-body" style="padding-top:4px;">
+                        <div class="form-group">
+                            <label>Minutes *</label>
+                            <textarea id="minutesText" rows="12" style="
+                                width:100%; background:#0b1523; border:1px solid #16263b;
+                                border-radius:8px; padding:12px 16px; color:#e6e6ef;
+                                font-family:monospace; font-size:0.85rem; resize:vertical;
+                                outline:none; box-sizing:border-box; line-height:1.6;
+                            " placeholder="Record decisions, action items, and key discussions from this meeting..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button onclick="document.getElementById('minutesModal').hidden=true" style="
+                            background:#0b1523;border:1px solid #16263b;border-radius:8px;
+                            padding:10px 16px;color:#e6e6ef;font-family:monospace;
+                            font-size:0.9rem;cursor:pointer;">
+                            Cancel
+                        </button>
+                        <button onclick="saveMinutes()" style="
+                            background:linear-gradient(135deg,#065f46,#10b981);
+                            border:1px solid #10b98155;border-radius:8px;padding:10px 20px;
+                            color:#fff;font-family:monospace;font-size:0.9rem;font-weight:600;
+                            cursor:pointer;display:flex;align-items:center;gap:8px;">
+                            <i class="fas fa-floppy-disk"></i> Save Minutes
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- SCRUM-55: Past Meetings -->
@@ -294,6 +340,7 @@ function renderMeetingsSection() {
             tab.classList.add('active');
             const panel = el.querySelector(`#tab-${tab.dataset.tab}`);
             if (panel) panel.classList.add('active');
+            if (tab.dataset.tab === 'minutes') refreshMinutesTab();
         });
     });
 
@@ -303,6 +350,7 @@ function renderMeetingsSection() {
 
     allMeetings = getMeetingsData();
     renderMeetingRows(allMeetings);
+    refreshMinutesTab();
 }
 
 function openScheduleMeetingModal(meetingId = null) {
@@ -511,4 +559,94 @@ function showMeetingStatus(message, type) {
     el.innerHTML = `<p>${escHtml(message)}</p>`;
     el.hidden = false;
     setTimeout(() => { if (el) el.hidden = true; }, 4000);
+}
+
+// ── SCRUM-54: Meeting Minutes ──────────────────────────────
+
+function buildMinutesTabHtml(meetings) {
+    const relevant = meetings.filter(m => m.status !== 'cancelled');
+    if (relevant.length === 0) {
+        return '<p style="color:#94a3b8;font-family:monospace;padding:24px 0;text-align:center;">No meetings yet. Create meetings in the Schedule tab first.</p>';
+    }
+    const statusStyle = {
+        scheduled: 'background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;',
+        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;'
+    };
+
+    const rows = relevant.map(m => {
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const hasMinutes = !!(m.minutes && m.minutes.trim());
+        const style = statusStyle[m.status] || '';
+        const minutesCell = hasMinutes
+            ? '<span style="color:#34d399;font-size:0.8rem;font-family:monospace;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-circle-check"></i> Recorded</span>'
+            : '<span style="color:#475569;font-size:0.8rem;font-family:monospace;">— Not yet</span>';
+        const actionBtn = `<button class="mtg-act-btn ${hasMinutes ? 'reschedule-btn' : 'complete-btn'}" onclick="openMinutesModal('${m.id}')"><i class="fas fa-file-lines"></i> ${hasMinutes ? 'Edit Minutes' : 'Record Minutes'}</button>`;
+        return `<tr>
+            <td><span style="font-weight:600;color:#e6e6ef;">${escHtml(m.title)}</span></td>
+            <td style="color:#94a3b8;font-size:0.85rem;font-family:monospace;white-space:nowrap;">${dateStr}</td>
+            <td><span style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;${style}">${m.status}</span></td>
+            <td>${minutesCell}</td>
+            <td>${actionBtn}</td>
+        </tr>`;
+    }).join('');
+
+    return `<div class="members-table-wrapper" style="overflow-x:auto;">
+        <table class="members-table" style="min-width:580px;">
+            <thead>
+                <tr>
+                    <th style="min-width:200px;">Meeting</th>
+                    <th style="min-width:130px;">Date</th>
+                    <th style="min-width:110px;">Status</th>
+                    <th style="min-width:130px;">Minutes</th>
+                    <th style="min-width:160px;">Action</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+    </div>`;
+}
+
+function refreshMinutesTab() {
+    const container = document.getElementById('minutesTabContent');
+    if (container) container.innerHTML = buildMinutesTabHtml(getMeetingsData());
+}
+
+function openMinutesModal(meetingId) {
+    const m = getMeetingsData().find(x => x.id === meetingId);
+    if (!m) return;
+    const d = new Date(`${m.date}T${m.time}`);
+    const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const typeLabel = { 'in-person': 'In-Person', virtual: 'Virtual', hybrid: 'Hybrid' }[m.type] || m.type;
+    document.getElementById('minutesModalMeeting').textContent = m.title;
+    document.getElementById('minutesModalMeta').textContent = `${dateStr} at ${timeStr} · ${typeLabel}`;
+    document.getElementById('minutesMeetingId').value = meetingId;
+    document.getElementById('minutesText').value = m.minutes || '';
+    document.getElementById('minutesModalError').hidden = true;
+    document.getElementById('minutesModal').hidden = false;
+}
+
+function saveMinutes() {
+    const meetingId = document.getElementById('minutesMeetingId').value;
+    const text = document.getElementById('minutesText').value.trim();
+    const errorEl = document.getElementById('minutesModalError');
+
+    if (!text) {
+        errorEl.textContent = 'Minutes cannot be empty.';
+        errorEl.hidden = false;
+        return;
+    }
+
+    const meetings = getMeetingsData();
+    const idx = meetings.findIndex(m => m.id === meetingId);
+    if (idx !== -1) {
+        meetings[idx].minutes = text;
+        saveMeetingsData(meetings);
+        allMeetings = meetings;
+    }
+
+    document.getElementById('minutesModal').hidden = true;
+    refreshMinutesTab();
+    showMeetingStatus('Meeting minutes saved successfully.', 'success');
 }
