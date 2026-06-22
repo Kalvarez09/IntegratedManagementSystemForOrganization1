@@ -107,7 +107,7 @@ function renderMeetingsSection() {
                             <th style="min-width:100px;">Type</th>
                             <th style="min-width:80px;">Duration</th>
                             <th style="min-width:110px;">Status</th>
-                            <th style="min-width:190px;">Actions</th>
+                            <th style="min-width:270px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="meetingsTableBody">
@@ -444,15 +444,21 @@ function renderMeetingRows(meetings) {
             <td style="color:#94a3b8;font-family:monospace;font-size:0.82rem;white-space:nowrap;">${escHtml(m.duration)}</td>
             <td><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;${statusStyle[m.status] || ''}"><i class="${statusIcon[m.status] || 'fas fa-circle'}" style="font-size:9px;"></i>${m.status}</span></td>
             <td>
-                ${!cancelled ? `
-                <div style="display:flex;gap:6px;flex-wrap:nowrap;">
+                ${m.status === 'scheduled' ? `
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <button class="mtg-act-btn reschedule-btn" onclick="openScheduleMeetingModal('${m.id}')">
                         <i class="fas fa-calendar-days"></i> Reschedule
+                    </button>
+                    <button class="mtg-act-btn complete-btn" onclick="executeCompleteMeeting('${m.id}')">
+                        <i class="fas fa-circle-check"></i> Complete
                     </button>
                     <button class="mtg-act-btn cancel-btn" onclick="confirmCancelMeeting('${m.id}','${safeTitle}')">
                         <i class="fas fa-ban"></i> Cancel
                     </button>
-                </div>` : `<span style="color:#475569;font-size:0.75rem;font-family:monospace;">Cancelled</span>`}
+                </div>`
+                : m.status === 'completed'
+                ? `<span style="color:#34d399;font-size:0.75rem;font-family:monospace;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-circle-check"></i> Completed</span>`
+                : `<span style="color:#475569;font-size:0.75rem;font-family:monospace;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-ban"></i> Cancelled</span>`}
             </td>
         </tr>`;
     }).join('');
@@ -483,6 +489,18 @@ function executeCancelMeeting(id) {
         allMeetings = meetings;
         filterMeetings();
         showMeetingStatus('Meeting has been cancelled.', 'info');
+    }
+}
+
+function executeCompleteMeeting(id) {
+    const meetings = getMeetingsData();
+    const idx = meetings.findIndex(m => m.id === id);
+    if (idx !== -1) {
+        meetings[idx].status = 'completed';
+        saveMeetingsData(meetings);
+        allMeetings = meetings;
+        filterMeetings();
+        showMeetingStatus('Meeting marked as completed.', 'success');
     }
 }
 

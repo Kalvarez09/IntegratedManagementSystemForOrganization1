@@ -111,6 +111,17 @@
     border-color: #3b82f666;
 }
 
+.mtg-act-btn.complete-btn {
+    background: #10b9811a;
+    color: #34d399;
+    border-color: #10b98133;
+}
+
+.mtg-act-btn.complete-btn:hover {
+    background: #10b98130;
+    border-color: #10b98166;
+}
+
 .mtg-act-btn.cancel-btn {
     background: #dc262614;
     color: #f87171;
