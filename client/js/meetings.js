@@ -345,13 +345,36 @@ function renderMeetingsSection() {
 
         <!-- SCRUM-56: Meeting Archives -->
         <div class="meetings-tab-panel" id="tab-archives">
-            ${meetingComingSoonCard(
-                'fas fa-box-archive',
-                'Meeting Archives',
-                'SCRUM-56',
-                'Automatic archiving of completed meetings for long-term record keeping, compliance, and institutional memory. Archives are searchable and permanently retained.',
-                ['Auto-Archiving', 'Retention Policies', 'Archive Search', 'Compliance Audit Trail']
-            )}
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#e6e6ef;font-size:1.1rem;font-family:monospace;font-weight:700;margin:0 0 4px;">
+                    <i class="fas fa-box-archive" style="color:#fcd34d;margin-right:8px;"></i>Meeting Archives
+                </h2>
+                <p style="color:#94a3b8;font-size:0.82rem;font-family:monospace;margin:0;">
+                    SCRUM-56 · Meetings are automatically archived 12 months after their date. All data is preserved. Click a row to view full details.
+                </p>
+            </div>
+            <div id="adminArchivesList"></div>
+
+            <!-- Archive Detail Modal -->
+            <div class="modal-overlay" id="adminArchiveModal" hidden>
+                <div class="modal-card" style="max-width:660px;width:92vw;">
+                    <div class="modal-header">
+                        <div style="flex:1;min-width:0;">
+                            <h3 id="archTitle" style="margin:0;word-break:break-word;"></h3>
+                            <p id="archBadges" style="margin:6px 0 0;display:flex;gap:6px;flex-wrap:wrap;"></p>
+                        </div>
+                        <button class="modal-close" id="archCloseX">✕</button>
+                    </div>
+                    <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
+                        <div id="archDetails" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+                        <div>
+                            <div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #16263b;">Meeting Minutes</div>
+                            <div id="archMinutes"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="archFooter"></div>
+                </div>
+            </div>
         </div>
     `;
 
@@ -365,6 +388,7 @@ function renderMeetingsSection() {
             if (panel) panel.classList.add('active');
             if (tab.dataset.tab === 'minutes') refreshMinutesTab();
             if (tab.dataset.tab === 'past-meetings') renderPastMeetingsTab();
+            if (tab.dataset.tab === 'archives') renderArchivesTab();
         });
     });
 
@@ -380,10 +404,23 @@ function renderMeetingsSection() {
         if (e.target === this) this.hidden = true;
     });
 
+    // Archives tab — card clicks & modal close
+    document.getElementById('tab-archives').addEventListener('click', function(e) {
+        const card = e.target.closest('.admin-archive-card');
+        if (card) openAdminArchiveModal(card.dataset.archId);
+    });
+    document.getElementById('archCloseX').addEventListener('click', () => {
+        document.getElementById('adminArchiveModal').hidden = true;
+    });
+    document.getElementById('adminArchiveModal').addEventListener('click', function(e) {
+        if (e.target === this) this.hidden = true;
+    });
+
     document.getElementById('scheduleMeetingBtn').addEventListener('click', () => openScheduleMeetingModal());
     document.getElementById('meetingSearch').addEventListener('input', filterMeetings);
     document.getElementById('meetingStatusFilter').addEventListener('change', filterMeetings);
 
+    autoArchiveMeetings();
     allMeetings = getMeetingsData();
     renderMeetingRows(allMeetings);
     refreshMinutesTab();
@@ -552,6 +589,7 @@ function filterMeetings() {
     const query  = (document.getElementById('meetingSearch')?.value || '').toLowerCase();
     const status = document.getElementById('meetingStatusFilter')?.value || '';
     renderMeetingRows(allMeetings.filter(m =>
+        m.status !== 'archived' &&
         (!query  || m.title.toLowerCase().includes(query) || (m.location || '').toLowerCase().includes(query)) &&
         (!status || m.status === status)
     ));
@@ -606,7 +644,8 @@ function buildMinutesTabHtml(meetings) {
     }
     const statusStyle = {
         scheduled: 'background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;',
-        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;'
+        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;',
+        archived:  'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;'
     };
 
     const rows = relevant.map(m => {
@@ -709,7 +748,7 @@ function renderPastMeetingsTab() {
     };
 
     const past = getMeetingsData()
-        .filter(m => new Date(`${m.date}T${m.time}`) < now)
+        .filter(m => new Date(`${m.date}T${m.time}`) < now && m.status !== 'archived')
         .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
 
     if (!past.length) {
@@ -828,4 +867,150 @@ function openAdminPastMeetingModal(id) {
     });
 
     document.getElementById('adminPastMeetingModal').hidden = false;
+}
+
+// ── SCRUM-56: Meeting Archives ────────────────────────────────
+
+function autoArchiveMeetings() {
+    const threshold = new Date();
+    threshold.setFullYear(threshold.getFullYear() - 1);
+    const meetings = getMeetingsData();
+    let changed = false;
+    meetings.forEach(m => {
+        if (m.status !== 'archived' && m.status !== 'cancelled') {
+            if (new Date(`${m.date}T${m.time}`) < threshold) {
+                m.status = 'archived';
+                changed = true;
+            }
+        }
+    });
+    if (changed) {
+        saveMeetingsData(meetings);
+        allMeetings = meetings;
+    }
+}
+
+function renderArchivesTab() {
+    const container = document.getElementById('adminArchivesList');
+    if (!container) return;
+
+    const typeLabels = { 'in-person':'In-Person', virtual:'Virtual', hybrid:'Hybrid' };
+    const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+    };
+
+    const archived = getMeetingsData()
+        .filter(m => m.status === 'archived')
+        .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+
+    if (!archived.length) {
+        container.innerHTML = `<div style="padding:24px 20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;">No archived meetings yet. Meetings are automatically archived 12 months after their date.</div>`;
+        return;
+    }
+
+    const countBadge = `<div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#7c3aed1a;border:1px solid #7c3aed33;border-radius:8px;margin-bottom:16px;font-family:monospace;font-size:0.82rem;color:#a78bfa;">
+        <i class="fas fa-box-archive"></i> ${archived.length} archived meeting${archived.length !== 1 ? 's' : ''}</div>`;
+
+    container.innerHTML = countBadge + archived.map(m => {
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+        const hasMinutes = !!(m.minutes && m.minutes.trim());
+        return `<div class="admin-archive-card" data-arch-id="${m.id}"
+            style="display:flex;align-items:center;justify-content:space-between;gap:16px;
+            padding:14px 18px;margin-bottom:8px;background:#0b1523;border:1px solid #16263b;
+            border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;opacity:0.85;"
+            onmouseover="this.style.borderColor='#7c3aed55';this.style.background='#101c2e';this.style.opacity='1';"
+            onmouseout="this.style.borderColor='#16263b';this.style.background='#0b1523';this.style.opacity='0.85';">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#1e293b;border:1px solid #7c3aed55;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-box-archive" style="color:#a78bfa;font-size:0.65rem;"></i>
+                </div>
+                <div style="min-width:0;">
+                    <span style="display:block;font-weight:600;color:#94a3b8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;">${escHtml(m.title)}</span>
+                    <span style="font-size:0.76rem;color:#64748b;font-family:monospace;">${dateStr} &bull; ${timeStr}</span>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;"><i class="fas fa-box-archive" style="font-size:9px;"></i> archived</span>
+                ${hasMinutes
+                    ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-family:monospace;color:#34d399;"><i class="fas fa-circle-check" style="font-size:9px;"></i> Minutes</span>`
+                    : `<span style="font-size:0.7rem;font-family:monospace;color:#475569;">No minutes</span>`}
+                <i class="fas fa-chevron-right" style="color:#334155;font-size:0.7rem;"></i>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openAdminArchiveModal(id) {
+    const m = getMeetingsData().find(x => x.id === id);
+    if (!m) return;
+    _currentApmId = id;
+
+    const d = new Date(`${m.date}T${m.time}`);
+    const dateStr = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+
+    const typeLabels = { 'in-person':'In-Person', virtual:'Virtual', hybrid:'Hybrid' };
+    const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+    };
+
+    document.getElementById('archTitle').textContent = m.title;
+    document.getElementById('archBadges').innerHTML =
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+         <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;"><i class="fas fa-box-archive" style="font-size:9px;"></i> Archived</span>`;
+
+    const isLink = m.location && (m.location.startsWith('http://') || m.location.startsWith('https://'));
+    const locationVal = m.location
+        ? (isLink ? `<a href="${escHtml(m.location)}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;word-break:break-all;">${escHtml(m.location)}</a>`
+                  : `<span style="color:#e6e6ef;">${escHtml(m.location)}</span>`)
+        : `<span style="color:#475569;">—</span>`;
+
+    const detailItem = (icon, label, val) =>
+        `<div style="background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:0.68rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><i class="fas ${icon}" style="margin-right:5px;"></i>${label}</div>
+            <div style="font-size:0.85rem;">${val}</div>
+        </div>`;
+
+    document.getElementById('archDetails').innerHTML =
+        detailItem('fa-calendar', 'Date', `<span style="color:#e6e6ef;">${dateStr}</span>`) +
+        detailItem('fa-clock', 'Time', `<span style="color:#e6e6ef;">${timeStr} &bull; ${escHtml(m.duration||'')}</span>`) +
+        detailItem('fa-location-dot', 'Location', locationVal) +
+        (m.agenda ? detailItem('fa-list', 'Agenda', `<span style="color:#94a3b8;font-size:0.8rem;">${escHtml(m.agenda)}</span>`) : '');
+
+    const hasMinutes = !!(m.minutes && m.minutes.trim());
+    document.getElementById('archMinutes').innerHTML = hasMinutes
+        ? `<textarea rows="8" readonly style="width:100%;background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;color:#e6e6ef;font-family:monospace;font-size:0.83rem;resize:vertical;outline:none;box-sizing:border-box;line-height:1.6;cursor:default;">${escHtml(m.minutes)}</textarea>`
+        : `<div style="padding:16px;background:#060e1a;border:1px solid #16263b;border-radius:8px;color:#475569;font-family:monospace;font-size:0.83rem;font-style:italic;">Minutes not yet available.</div>`;
+
+    const footer = document.getElementById('archFooter');
+    footer.innerHTML = `
+        <button id="archFooterClose" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">Close</button>
+        <button id="archFooterMinutes" style="background:linear-gradient(135deg,#065f46,#10b981);border:1px solid #10b98155;border-radius:8px;padding:10px 20px;color:#fff;font-family:monospace;font-size:0.9rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+            <i class="fas fa-file-lines"></i> ${hasMinutes ? 'Edit Minutes' : 'Record Minutes'}
+        </button>`;
+
+    document.getElementById('archFooterClose').addEventListener('click', () => {
+        document.getElementById('adminArchiveModal').hidden = true;
+    });
+    document.getElementById('archFooterMinutes').addEventListener('click', () => {
+        document.getElementById('adminArchiveModal').hidden = true;
+        const el = document.getElementById('section-meetings');
+        el.querySelectorAll('.meetings-tab').forEach(t => t.classList.remove('active'));
+        el.querySelectorAll('.meetings-tab-panel').forEach(p => p.classList.remove('active'));
+        const minutesTab = el.querySelector('.meetings-tab[data-tab="minutes"]');
+        const minutesPanel = el.querySelector('#tab-minutes');
+        if (minutesTab) minutesTab.classList.add('active');
+        if (minutesPanel) minutesPanel.classList.add('active');
+        refreshMinutesTab();
+        openMinutesModal(_currentApmId);
+    });
+
+    document.getElementById('adminArchiveModal').hidden = false;
 }
