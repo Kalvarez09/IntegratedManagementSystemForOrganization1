@@ -311,13 +311,36 @@ function renderMeetingsSection() {
 
         <!-- SCRUM-55: Past Meetings -->
         <div class="meetings-tab-panel" id="tab-past-meetings">
-            ${meetingComingSoonCard(
-                'fas fa-clock-rotate-left',
-                'Past Meetings',
-                'SCRUM-55',
-                'Members can browse and review records of all past meetings, access published minutes, and view attendance history for full organizational transparency.',
-                ['Meeting History', 'Search & Filter', 'Minutes Access', 'Attendance Records']
-            )}
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#e6e6ef;font-size:1.1rem;font-family:monospace;font-weight:700;margin:0 0 4px;">
+                    <i class="fas fa-clock-rotate-left" style="color:#a78bfa;margin-right:8px;"></i>Past Meetings
+                </h2>
+                <p style="color:#94a3b8;font-size:0.82rem;font-family:monospace;margin:0;">
+                    SCRUM-55 · All meetings whose date has already passed. Click a row to view details &amp; minutes.
+                </p>
+            </div>
+            <div id="adminPastMeetingsList"></div>
+
+            <!-- Admin Past Meeting Detail Modal -->
+            <div class="modal-overlay" id="adminPastMeetingModal" hidden>
+                <div class="modal-card" style="max-width:660px;width:92vw;">
+                    <div class="modal-header">
+                        <div style="flex:1;min-width:0;">
+                            <h3 id="apmTitle" style="margin:0;word-break:break-word;"></h3>
+                            <p id="apmBadges" style="margin:6px 0 0;display:flex;gap:6px;flex-wrap:wrap;"></p>
+                        </div>
+                        <button class="modal-close" id="apmCloseX">✕</button>
+                    </div>
+                    <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
+                        <div id="apmDetails" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+                        <div>
+                            <div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #16263b;">Meeting Minutes</div>
+                            <div id="apmMinutes"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer" id="apmFooter"></div>
+                </div>
+            </div>
         </div>
 
         <!-- SCRUM-56: Meeting Archives -->
@@ -341,7 +364,20 @@ function renderMeetingsSection() {
             const panel = el.querySelector(`#tab-${tab.dataset.tab}`);
             if (panel) panel.classList.add('active');
             if (tab.dataset.tab === 'minutes') refreshMinutesTab();
+            if (tab.dataset.tab === 'past-meetings') renderPastMeetingsTab();
         });
+    });
+
+    // Past Meetings tab — card clicks & modal close
+    document.getElementById('tab-past-meetings').addEventListener('click', function(e) {
+        const card = e.target.closest('.admin-past-card');
+        if (card) openAdminPastMeetingModal(card.dataset.apmId);
+    });
+    document.getElementById('apmCloseX').addEventListener('click', () => {
+        document.getElementById('adminPastMeetingModal').hidden = true;
+    });
+    document.getElementById('adminPastMeetingModal').addEventListener('click', function(e) {
+        if (e.target === this) this.hidden = true;
     });
 
     document.getElementById('scheduleMeetingBtn').addEventListener('click', () => openScheduleMeetingModal());
@@ -649,4 +685,147 @@ function saveMinutes() {
     document.getElementById('minutesModal').hidden = true;
     refreshMinutesTab();
     showMeetingStatus('Meeting minutes saved successfully.', 'success');
+}
+
+// ── SCRUM-55: Past Meetings (Admin) ───────────────────────────
+
+let _currentApmId = null;
+
+function renderPastMeetingsTab() {
+    const container = document.getElementById('adminPastMeetingsList');
+    if (!container) return;
+
+    const now = new Date();
+    const typeLabels = { 'in-person':'In-Person', virtual:'Virtual', hybrid:'Hybrid' };
+    const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+    };
+    const statusStyle = {
+        scheduled: 'background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;',
+        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;',
+        cancelled: 'background:#ef44441a;color:#f87171;border:1px solid #ef444433;'
+    };
+
+    const past = getMeetingsData()
+        .filter(m => new Date(`${m.date}T${m.time}`) < now)
+        .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+
+    if (!past.length) {
+        container.innerHTML = `<div style="padding:24px 20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;">No past meetings yet.</div>`;
+        return;
+    }
+
+    container.innerHTML = past.map(m => {
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+        const hasMinutes = !!(m.minutes && m.minutes.trim());
+        return `<div class="admin-past-card" data-apm-id="${m.id}"
+            style="display:flex;align-items:center;justify-content:space-between;gap:16px;
+            padding:14px 18px;margin-bottom:8px;background:#0b1523;border:1px solid #16263b;
+            border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;"
+            onmouseover="this.style.borderColor='#3b82f655';this.style.background='#101c2e';"
+            onmouseout="this.style.borderColor='#16263b';this.style.background='#0b1523';">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+                <div style="width:36px;height:36px;border-radius:50%;background:#1e293b;border:1px solid #3b3f82;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-users" style="color:#a78bfa;font-size:0.65rem;"></i>
+                </div>
+                <div style="min-width:0;">
+                    <span style="display:block;font-weight:600;color:#e6e6ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:300px;">${escHtml(m.title)}</span>
+                    <span style="font-size:0.76rem;color:#64748b;font-family:monospace;">${dateStr} &bull; ${timeStr}</span>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+                <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+                <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${statusStyle[m.status]||''}">${m.status}</span>
+                ${hasMinutes
+                    ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-family:monospace;color:#34d399;"><i class="fas fa-circle-check" style="font-size:9px;"></i> Minutes</span>`
+                    : `<span style="font-size:0.7rem;font-family:monospace;color:#475569;">No minutes</span>`}
+                <i class="fas fa-chevron-right" style="color:#334155;font-size:0.7rem;"></i>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openAdminPastMeetingModal(id) {
+    const m = getMeetingsData().find(x => x.id === id);
+    if (!m) return;
+    _currentApmId = id;
+
+    const d = new Date(`${m.date}T${m.time}`);
+    const dateStr = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+
+    const typeLabels = { 'in-person':'In-Person', virtual:'Virtual', hybrid:'Hybrid' };
+    const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+    };
+    const statusStyle = {
+        scheduled: 'background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;',
+        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;',
+        cancelled: 'background:#ef44441a;color:#f87171;border:1px solid #ef444433;'
+    };
+    const statusIcon = {
+        scheduled: 'fas fa-calendar-check',
+        completed: 'fas fa-circle-check',
+        cancelled: 'fas fa-ban'
+    };
+
+    document.getElementById('apmTitle').textContent = m.title;
+    document.getElementById('apmBadges').innerHTML =
+        `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+         <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${statusStyle[m.status]||''}"><i class="${statusIcon[m.status]||'fas fa-circle'}" style="font-size:9px;"></i> ${m.status}</span>`;
+
+    const isLink = m.location && (m.location.startsWith('http://') || m.location.startsWith('https://'));
+    const locationVal = m.location
+        ? (isLink ? `<a href="${escHtml(m.location)}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;word-break:break-all;">${escHtml(m.location)}</a>`
+                  : `<span style="color:#e6e6ef;">${escHtml(m.location)}</span>`)
+        : `<span style="color:#475569;">—</span>`;
+
+    const detailItem = (icon, label, val) =>
+        `<div style="background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:0.68rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><i class="fas ${icon}" style="margin-right:5px;"></i>${label}</div>
+            <div style="font-size:0.85rem;">${val}</div>
+        </div>`;
+
+    document.getElementById('apmDetails').innerHTML =
+        detailItem('fa-calendar', 'Date', `<span style="color:#e6e6ef;">${dateStr}</span>`) +
+        detailItem('fa-clock', 'Time', `<span style="color:#e6e6ef;">${timeStr} &bull; ${escHtml(m.duration||'')}</span>`) +
+        detailItem('fa-location-dot', 'Location', locationVal) +
+        (m.agenda ? detailItem('fa-list', 'Agenda', `<span style="color:#94a3b8;font-size:0.8rem;">${escHtml(m.agenda)}</span>`) : '');
+
+    const hasMinutes = !!(m.minutes && m.minutes.trim());
+    document.getElementById('apmMinutes').innerHTML = hasMinutes
+        ? `<textarea rows="8" readonly style="width:100%;background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;color:#e6e6ef;font-family:monospace;font-size:0.83rem;resize:vertical;outline:none;box-sizing:border-box;line-height:1.6;cursor:default;">${escHtml(m.minutes)}</textarea>`
+        : `<div style="padding:16px;background:#060e1a;border:1px solid #16263b;border-radius:8px;color:#475569;font-family:monospace;font-size:0.83rem;font-style:italic;">Minutes not yet available.</div>`;
+
+    const footer = document.getElementById('apmFooter');
+    footer.innerHTML = `
+        <button id="apmFooterClose" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">Close</button>
+        <button id="apmFooterMinutes" style="background:linear-gradient(135deg,#065f46,#10b981);border:1px solid #10b98155;border-radius:8px;padding:10px 20px;color:#fff;font-family:monospace;font-size:0.9rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;">
+            <i class="fas fa-file-lines"></i> ${hasMinutes ? 'Edit Minutes' : 'Record Minutes'}
+        </button>`;
+
+    document.getElementById('apmFooterClose').addEventListener('click', () => {
+        document.getElementById('adminPastMeetingModal').hidden = true;
+    });
+    document.getElementById('apmFooterMinutes').addEventListener('click', () => {
+        document.getElementById('adminPastMeetingModal').hidden = true;
+        // Switch to Minutes tab, then open the record modal
+        const el = document.getElementById('section-meetings');
+        el.querySelectorAll('.meetings-tab').forEach(t => t.classList.remove('active'));
+        el.querySelectorAll('.meetings-tab-panel').forEach(p => p.classList.remove('active'));
+        const minutesTab = el.querySelector('.meetings-tab[data-tab="minutes"]');
+        const minutesPanel = el.querySelector('#tab-minutes');
+        if (minutesTab) minutesTab.classList.add('active');
+        if (minutesPanel) minutesPanel.classList.add('active');
+        refreshMinutesTab();
+        openMinutesModal(_currentApmId);
+    });
+
+    document.getElementById('adminPastMeetingModal').hidden = false;
 }
