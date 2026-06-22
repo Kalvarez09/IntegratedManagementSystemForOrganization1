@@ -790,7 +790,7 @@ function initProfile() {
 
 /// Look for documents
 Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
     .forEach(renderFutureSection);
 
 renderMembersSection();
@@ -835,11 +835,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome(user);
 
     Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
     .forEach(renderFutureSection);
 
     renderMembersSection();
     renderDocumentsSection();
+    renderMeetingsSection();
 
     // Init interactions
     initSidebar();
@@ -1257,3 +1258,5 @@ function showDocStatus(message, type) {
     el.hidden = false;
     setTimeout(() => { el.hidden = true; }, 4000);
 }
+
+// Meeting Management (5.6) → see client/js/meetings.js  |  Styles → client/css/meetings.css
