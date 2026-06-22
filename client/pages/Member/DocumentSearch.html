@@ -4,61 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Documents — Organization X</title>
-  <link rel="stylesheet" href="MemberStyle.css">
+  <link rel="stylesheet" href="../../css/MemberStyle.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/documents.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="../../images/icon.svg">
-  <style>
-    .doc-toolbar { display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap; }
-    .doc-search-input {
-      flex:1; min-width:200px; background:#0b1523; border:1px solid #16263b;
-      border-radius:8px; padding:10px 16px; color:#f1f5f9;
-      font-family:monospace; font-size:0.9rem; outline:none;
-    }
-    .doc-search-input:focus { border-color:#3b82f6; }
-    .doc-search-input::placeholder { color:#475569; }
-    .doc-filter-select {
-      background:#0b1523; border:1px solid #16263b; border-radius:8px;
-      padding:10px 16px; color:#f1f5f9; font-family:monospace;
-      font-size:0.9rem; cursor:pointer; outline:none;
-    }
-    .doc-filter-select:focus { border-color:#3b82f6; }
-    .doc-table-wrap { background:#0b1523; border:1px solid #16263b; border-radius:12px; overflow:hidden; }
-    .doc-table { width:100%; border-collapse:collapse; }
-    .doc-table th {
-      text-align:left; padding:14px 20px; font-size:0.75rem;
-      text-transform:uppercase; letter-spacing:0.5px; color:#475569;
-      border-bottom:1px solid #16263b; font-family:monospace;
-    }
-    .doc-table td { padding:14px 20px; border-bottom:1px solid #16263b; font-size:0.9rem; color:#f1f5f9; }
-    .doc-table tr:last-child td { border-bottom:none; }
-    .doc-table tr:hover td { background:#0d1e33; }
-    .doc-cell { display:flex; align-items:center; gap:12px; }
-    .doc-icon {
-      width:32px; height:32px; border-radius:6px; background:#0d2540;
-      border:1px solid #1e4a7a; display:flex; align-items:center;
-      justify-content:center; font-size:0.75rem; color:#7ab8f5; flex-shrink:0;
-    }
-    .cat-pill {
-      display:inline-block; padding:3px 10px; border-radius:12px;
-      font-size:0.72rem; font-family:monospace; text-transform:uppercase;
-      letter-spacing:0.5px; background:#10b98124; color:#34d399; border:1px solid #10b98147;
-    }
-    .dl-btn {
-      background:#0b1523; border:1px solid #16263b; border-radius:6px;
-      padding:6px 14px; color:#f1f5f9; font-family:monospace; font-size:0.8rem;
-      cursor:pointer; transition:all 0.2s; display:flex; align-items:center; gap:6px;
-    }
-    .dl-btn:hover { border-color:#3b82f6; color:#7ab8f5; background:#3b82f610; }
-    .doc-empty { text-align:center; color:#475569; padding:40px; font-family:monospace; font-size:0.9rem; }
-    .status-bar {
-      display:none; padding:12px 16px; border-radius:8px;
-      font-family:monospace; font-size:0.85rem; margin-bottom:16px;
-    }
-    .status-bar.error { background:#ef44441a; border:1px solid #ef44444d; color:#f87171; }
-    .status-bar.success { background:#22c55e1a; border:1px solid #22c55e4d; color:#4ade80; }
-    .result-count { font-family:monospace; font-size:0.82rem; color:#475569; margin-bottom:12px; }
-  </style>
+
 </head>
 <body>
 
@@ -93,11 +44,11 @@
         <ul class="sub-menu show">
           <div>
             <li class="active"><a href="DocumentSearch.html">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path fill="rgb(255,255,255)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>
               Search</a>
             </li>
             <li><a href="MyFiles.html">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path fill="rgb(255,255,255)" d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>
               My Files</a>
             </li>
           </div>
@@ -170,7 +121,7 @@
     </main>
   </div>
 
-  <script src="Memberindex.js" defer></script>
+  <script src="../../js/Memberindex.js" defer></script>
   <script>
     let allDocs = [];
 
@@ -199,15 +150,15 @@
         <tr>
           <td><div class="doc-cell">
             <div class="doc-icon"><i class="${getDocIcon(doc.filename)}"></i></div>
-            <span>${escHtml(doc.title || doc.filename)}</span>
+            <a href="DocumentView.html?id=${doc.id}" style="color:#f1f5f9; text-decoration:none;">${escHtml(doc.title || doc.filename)}</a>
           </div></td>
           <td><span class="cat-pill">${escHtml(doc.category || 'Uncategorized')}</span></td>
           <td>${escHtml(doc.uploader_name || 'Admin')}</td>
           <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
           <td>
-            <button class="dl-btn" onclick="downloadDoc(${doc.id}, '${escHtml(doc.filename)}')">
-              <i class="fas fa-download"></i> Download
-            </button>
+            <a href="DocumentView.html?id=${doc.id}" class="dl-btn">
+              <i class="fas fa-eye"></i> View
+            </a>
           </td>
         </tr>
       `).join('');
@@ -248,14 +199,23 @@
 
     window.addEventListener('DOMContentLoaded', async () => {
       try {
-        const res  = await fetch('/api/documents');
-        if (!res.ok) throw new Error();
+        const res = await fetch('/api/documents');
+        if (res.status === 401) {
+          window.location.href = '/pages/MainPage/Login.html';
+          return;
+        }
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          document.getElementById('docTableBody').innerHTML =
+            `<tr><td colspan="5" class="doc-empty">${err.error || 'Could not load documents.'}</td></tr>`;
+          return;
+        }
         const data = await res.json();
-        allDocs = data.documents;
+        allDocs = data.documents || [];
         renderRows(allDocs);
       } catch {
         document.getElementById('docTableBody').innerHTML =
-          `<tr><td colspan="5" class="doc-empty">Could not load documents.</td></tr>`;
+          `<tr><td colspan="5" class="doc-empty">Could not connect to server.</td></tr>`;
       }
     });
   </script>

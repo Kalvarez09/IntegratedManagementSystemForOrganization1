@@ -7,7 +7,7 @@ const SECTIONS = {
         features: ['Data Import', 'Data Validation', 'Migration Tools', 'Audit Logs']
     }
     ,
-
+    
     'documents': {
         icon: 'fas fa-folder-open ',
         title: '5.3 Document Management System',
@@ -51,6 +51,16 @@ const SECTIONS = {
         features: ['Transaction Tracking', 'Budget Management', 'Financial Reports', 'Audit History']
     }
 };
+//////////MEMBER ROLES////////////
+const roleLabels  = {
+        admin:          'Admin',
+        president:      'President',
+        vice_president: 'Vice President',
+        secretary:      'Secretary',
+        treasurer:      'Treasurer',
+        technical_lead: 'Technical Lead',
+        member:         'Member',
+    };
 
 // --- Helpers ---
 
@@ -93,8 +103,8 @@ function renderHome(user) {
                 </p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-            `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
-        ).join('')}
+                        `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
+                    ).join('')}
                 </div>
             </div>
         `;
@@ -118,8 +128,8 @@ function renderHome(user) {
                 <p class="info-card-body">Here is a preview of what is being built for you:</p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-            `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
-        ).join('')}
+                        `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
+                    ).join('')}
                 </div>
             </div>
         `;
@@ -167,8 +177,8 @@ function renderFutureSection(id) {
             </div>
             <div class="feature-chips">
                 ${data.features.map(f =>
-        `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
-    ).join('')}
+                    `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
+                ).join('')}
             </div>
         </div>
     `;
@@ -201,6 +211,45 @@ async function renderMembersSection() {
     </div>
 
     <div id="uploadStatus" class="upload-status" hidden></div>
+    <div id="importAction" style="display:none; align-items:center; gap:10px; margin-top:14px;">
+        <button id="confirmImportBtn" style="
+            background: linear-gradient(135deg, #064e3b, #059669);
+            border: 1px solid #10b98166;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #ecfdf5;
+            font-family: monospace;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 0 14px #10b98133, inset 0 1px 0 #10b98122;
+            transition: box-shadow 0.2s, transform 0.1s;
+        " onmouseover="this.style.boxShadow='0 0 22px #10b98155, inset 0 1px 0 #10b98122'"
+           onmouseout="this.style.boxShadow='0 0 14px #10b98133, inset 0 1px 0 #10b98122'">
+            <i class="fas fa-file-import"></i>
+            <span id="confirmImportLabel">Import</span>
+        </button>
+        <button id="cancelImportBtn" style="
+            background: #0b1523;
+            border: 1px solid #16263b;
+            border-radius: 8px;
+            padding: 10px 18px;
+            color: #94a3b8;
+            font-family: monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: border-color 0.2s, color 0.2s;
+        " onmouseover="this.style.borderColor='#334155';this.style.color='#f1f5f9'"
+           onmouseout="this.style.borderColor='#16263b';this.style.color='#94a3b8'">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+    </div>
 
     <div class="members-table-wrapper">
         <table class="members-table">
@@ -235,8 +284,13 @@ async function renderMembersSection() {
                 <div class="form-group">
                     <label>Role</label>
                     <select id="newMemberRole" class="member-search-input" style="max-width:100%">
-                        <option value="member">Member</option>
+                        <option value="member">General Member</option>
                         <option value="admin">Admin</option>
+                        <option value="president">President</option>
+                        <option value="vice_president">Vice President</option>
+                        <option value="secretary">Secretary</option>
+                        <option value="treasurer">Treasurer</option>
+                        <option value="technical_lead">Technical Lead</option>
                     </select>
                 </div>
             </div>
@@ -271,44 +325,83 @@ async function renderMembersSection() {
     });
 
     document.getElementById('addMemberBtn').addEventListener('click', () => {
-        openModal('addMemberModal');
+    openModal('addMemberModal');
+    }); 
+
+    let pendingImportRows = [];
+
+    function showImportButton(count) {
+        document.getElementById('confirmImportLabel').textContent = `Import ${count} row(s)`;
+        document.getElementById('importAction').style.display = 'flex';
+    }
+
+    function hideImportButton() {
+        document.getElementById('importAction').style.display = 'none';
+        pendingImportRows = [];
+    }
+
+    document.getElementById('cancelImportBtn').addEventListener('click', () => {
+        hideImportButton();
+        document.getElementById('uploadStatus').hidden = true;
     });
 
-    document.getElementById('csvFileInput').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        showUploadStatus('Validating file...', 'info');
-
-        const formData = new FormData();
-        formData.append('file', file);
+    document.getElementById('confirmImportBtn').addEventListener('click', async () => {
+        if (!pendingImportRows.length) return;
+        const btn = document.getElementById('confirmImportBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Importing...';
 
         try {
-            const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
+            const res = await fetch('/api/auth/import-members', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rows: pendingImportRows })
+            });
             const data = await res.json();
-
-            if (data.success) {
-                showUploadStatus(`${data.message} (${data.rowCount} rows)`, 'success');
-            } else {
-                showUploadStatus(data.message, 'error', data.errors);
-            }
+            hideImportButton();
+            showUploadStatus(data.message, data.summary?.failed?.length > 0 ? 'error' : 'success',
+                null, null, null, data.summary);
+            if (data.summary?.inserted?.length > 0) await loadMembers();
         } catch {
             showUploadStatus('Could not connect to server.', 'error');
         }
 
-        e.target.value = '';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-file-import"></i> <span id="confirmImportLabel">Import</span>';
     });
 
-    function showUploadStatus(message, type, errors = null) {
-        const el = document.getElementById('uploadStatus');
-        el.className = `upload-status ${type}`;
-        let html = `<p>${escHtml(message)}</p>`;
-        if (errors && errors.length > 0) {
-            html += `<ul>${errors.map(e => `<li>${escHtml(e)}</li>`).join('')}</ul>`;
+    document.getElementById('csvFileInput').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    hideImportButton();
+    showUploadStatus('Validating file...', 'info');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            const hasIssues = (data.duplicates?.length > 0) || (data.missingRows?.length > 0);
+            showUploadStatus(data.message, hasIssues ? 'error' : 'success', null, data.duplicates, data.missingRows, data.standardizedRows);
+            if (data.standardizedRows?.length > 0) {
+                pendingImportRows = data.standardizedRows;
+                showImportButton(data.standardizedRows.length);
+            }
+        } else {
+            showUploadStatus(data.message, 'error', data.errors, data.duplicates, data.missingRows);
         }
-        el.innerHTML = html;
-        el.hidden = false;
+    } catch {
+        showUploadStatus('Could not connect to server.', 'error');
     }
+
+    e.target.value = '';
+});
+
+   
 
     document.getElementById('memberSearch').addEventListener('input', e => {
         filterMembers(e.target.value);
@@ -348,7 +441,13 @@ function renderMemberRows(members) {
                 </div>
             </td>
             <td>${escHtml(m.email)}</td>
-            <td><span class="role-pill ${m.role}">${m.role}</span></td>
+            <td>
+                <span
+                    class="role-pill ${m.role} clickable-role"
+                    onclick="openRoleEditor(this, ${m.id}, '${m.role}')"
+                    title="Click to change role"
+                >${roleLabels[m.role] || m.role}</span>
+            </td>
             <td>${new Date(m.created_at).toLocaleDateString()}</td>
             <td>
                 <button
@@ -361,6 +460,60 @@ function renderMemberRows(members) {
             </td>
         </tr>
     `).join('');
+}
+function openRoleEditor(pillEl, memberId, currentRole) {
+    const VALID_ROLES = ['member', 'admin', 'president', 'vice_president', 'secretary', 'treasurer', 'technical_lead'];
+
+    const select = document.createElement('select');
+    select.className = 'role-inline-select';
+
+    VALID_ROLES.forEach(r => {
+        const option = document.createElement('option');
+        option.value = r;
+        option.textContent = roleLabels[r] || r;
+        if (r === currentRole) option.selected = true;
+        select.appendChild(option);
+    });
+
+    pillEl.replaceWith(select);
+    select.focus();
+
+    async function commitChange() {
+        const newRole = select.value;
+        if (newRole === currentRole) {
+            select.replaceWith(pillEl);
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/auth/members/${memberId}/role`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ role: newRole })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                showUploadStatus(`Role updated to ${roleLabels[newRole]}.`, 'success');
+                await loadMembers();
+            } else {
+                showUploadStatus(data.message, 'error');
+                select.replaceWith(pillEl);
+            }
+        } catch {
+            showUploadStatus('Could not connect to server.', 'error');
+            select.replaceWith(pillEl);
+        }
+    }
+
+    select.addEventListener('change', commitChange);
+    select.addEventListener('blur', () => {
+        setTimeout(() => {
+            if (document.activeElement !== select) {
+                select.replaceWith(pillEl);
+            }
+        }, 150);
+    });
 }
 function openModal(id) {
     document.getElementById(id).hidden = false;
@@ -396,9 +549,9 @@ async function executeRemove(memberId) {
 
 async function submitAddMember() {
     const full_name = document.getElementById('newMemberName').value.trim();
-    const email = document.getElementById('newMemberEmail').value.trim();
-    const role = document.getElementById('newMemberRole').value;
-    const errorEl = document.getElementById('addMemberError');
+    const email    = document.getElementById('newMemberEmail').value.trim();
+    const role     = document.getElementById('newMemberRole').value;
+    const errorEl  = document.getElementById('addMemberError');
     const submitBtn = document.getElementById('addMemberSubmitBtn');
 
     errorEl.hidden = true;
@@ -438,6 +591,124 @@ async function submitAddMember() {
 
     submitBtn.disabled = false;
     submitBtn.textContent = 'Add Member';
+}
+ function showUploadStatus(message, type, errors = null, duplicates = null, missingRows = null, summary = null) {
+    const el = document.getElementById('uploadStatus');
+    el.className = `upload-status ${type}`;
+
+    const sectionStyle = 'margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15);';
+    const labelStyle   = 'font-weight:700; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px;';
+    const listStyle    = 'margin:4px 0 0 0; padding-left:18px;';
+    const itemStyle    = 'margin-bottom:2px; font-size:0.85rem;';
+    const tableStyle   = 'width:100%; border-collapse:collapse; font-size:0.82rem;';
+    const thStyle      = 'text-align:left; padding:4px 8px; font-weight:600; opacity:0.75;';
+    const tdStyle      = 'padding:4px 8px;';
+
+    let html = `<p style="font-weight:600; margin-bottom:4px;">${escHtml(message)}</p>`;
+
+    // Validation errors
+    if (errors && errors.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Validation errors (${errors.length})</p>`;
+        html += `<ul style="${listStyle}">${errors.map(e => `<li style="${itemStyle}">${escHtml(e)}</li>`).join('')}</ul>`;
+        html += `</div>`;
+    }
+
+    // Duplicates removed
+    if (duplicates && duplicates.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Duplicates removed (${duplicates.length})</p>`;
+        html += `<ul style="${listStyle}">${duplicates.map(d =>
+            `<li style="${itemStyle}">Row ${d.row}: <strong>${escHtml(d.email)}</strong> — ${escHtml(d.reason)}</li>`
+        ).join('')}</ul>`;
+        html += `</div>`;
+    }
+
+    // Missing required fields
+    if (missingRows && missingRows.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle}">Rows skipped — missing required fields (${missingRows.length})</p>`;
+        html += `<ul style="${listStyle}">${missingRows.map(r =>
+            `<li style="${itemStyle}">Row ${r.row}: missing <strong>${r.fields.map(f => escHtml(f)).join(', ')}</strong></li>`
+        ).join('')}</ul>`;
+        html += `</div>`;
+    }
+
+    // Preview table (before import) — standardizedRows passed as summary when it's an array
+    if (Array.isArray(summary) && summary.length > 0) {
+        html += `<div style="${sectionStyle}">`;
+        html += `<p style="${labelStyle} color:#4ade80;">Data ready to import (${summary.length} rows)</p>`;
+        html += `<div style="max-height:220px; overflow-y:auto; overflow-x:auto; border-radius:6px;">
+            <table style="${tableStyle} color:#4ade80;">
+                <thead><tr style="border-bottom:1px solid rgba(74,222,128,0.3); position:sticky; top:0; background:#0b1a2e;">
+                    <th style="${thStyle}">#</th>
+                    <th style="${thStyle}">Full Name</th>
+                    <th style="${thStyle}">Email</th>
+                    <th style="${thStyle}">Role</th>
+                </tr></thead>
+                <tbody>${summary.map((r, i) => `
+                    <tr style="border-bottom:1px solid rgba(74,222,128,0.1);">
+                        <td style="${tdStyle} opacity:0.6;">${i + 1}</td>
+                        <td style="${tdStyle}">${escHtml(r.full_name)}</td>
+                        <td style="${tdStyle}">${escHtml(r.email)}</td>
+                        <td style="${tdStyle}">${escHtml(r.role || 'member')}</td>
+                    </tr>`).join('')}
+                </tbody>
+            </table>
+        </div>`;
+        html += `</div>`;
+    }
+
+    // Import result summary (after import)
+    if (summary && !Array.isArray(summary)) {
+        // Successfully inserted — green table
+        if (summary.inserted?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#4ade80;">Successfully imported (${summary.inserted.length})</p>`;
+            html += `<div style="max-height:220px; overflow-y:auto; overflow-x:auto; border-radius:6px;">
+                <table style="${tableStyle} color:#4ade80;">
+                    <thead><tr style="border-bottom:1px solid rgba(74,222,128,0.3); position:sticky; top:0; background:#0b1a2e;">
+                        <th style="${thStyle}">#</th>
+                        <th style="${thStyle}">Full Name</th>
+                        <th style="${thStyle}">Email</th>
+                        <th style="${thStyle}">Role</th>
+                    </tr></thead>
+                    <tbody>${summary.inserted.map((r, i) => `
+                        <tr style="border-bottom:1px solid rgba(74,222,128,0.1);">
+                            <td style="${tdStyle} opacity:0.6;">${i + 1}</td>
+                            <td style="${tdStyle}">${escHtml(r.full_name)}</td>
+                            <td style="${tdStyle}">${escHtml(r.email)}</td>
+                            <td style="${tdStyle}">${escHtml(r.role)}</td>
+                        </tr>`).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+            html += `</div>`;
+        }
+
+        // Skipped at DB level — orange
+        if (summary.skipped?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#fb923c;">Skipped at import (${summary.skipped.length})</p>`;
+            html += `<ul style="${listStyle}">${summary.skipped.map(r =>
+                `<li style="${itemStyle} color:#fb923c;"><strong>${escHtml(r.full_name)}</strong> (${escHtml(r.email)}) — ${escHtml(r.reason)}</li>`
+            ).join('')}</ul>`;
+            html += `</div>`;
+        }
+
+        // Failed — red
+        if (summary.failed?.length > 0) {
+            html += `<div style="${sectionStyle}">`;
+            html += `<p style="${labelStyle} color:#f87171;">Failed to insert (${summary.failed.length})</p>`;
+            html += `<ul style="${listStyle}">${summary.failed.map(r =>
+                `<li style="${itemStyle} color:#f87171;"><strong>${escHtml(r.full_name)}</strong> (${escHtml(r.email)}) — ${escHtml(r.reason)}</li>`
+            ).join('')}</ul>`;
+            html += `</div>`;
+        }
+    }
+
+    el.innerHTML = html;
+    el.hidden = false;
 }
 
 function filterMembers(query) {
@@ -517,6 +788,14 @@ function initProfile() {
 
 // --- Bootstrap ---
 
+/// Look for documents
+Object.keys(SECTIONS)
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+    .forEach(renderFutureSection);
+
+renderMembersSection();
+renderDocumentsSection();
+
 function escHtml(str) {
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -532,24 +811,36 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('avatarInitials').textContent = getInitials(user.full_name);
     document.getElementById('profileName').textContent = user.full_name;
 
+    
+
+    // Topbar role badge
     const badge = document.getElementById('roleBadge');
-    if (user.role === 'admin') {
-        badge.textContent = 'Admin';
-        badge.classList.add('admin');
-    } else {
-        badge.textContent = 'Member';
-        badge.classList.add('member');
+    if (badge) {
+        const label = roleLabels[user.role] || 'Member';
+        const cssClass = user.role in roleLabels ? user.role : 'member';
+        badge.textContent = label;
+        badge.classList.add(cssClass);
+    }
+
+    // Profile page role pill
+    const profileRoleBadge = document.getElementById('profileRoleBadge');
+    if (profileRoleBadge) {
+        const label = roleLabels[user.role] || 'Member';
+        const cssClass = user.role in roleLabels ? user.role : 'member';
+        profileRoleBadge.textContent = label;
+        profileRoleBadge.classList.add(cssClass);
     }
 
     // Render all sections
     renderHome(user);
 
     Object.keys(SECTIONS)
-        .filter(id => id !== 'data-migration' && id !== 'documents')
-        .forEach(renderFutureSection);
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+    .forEach(renderFutureSection);
 
     renderMembersSection();
     renderDocumentsSection();
+    renderMeetingsSection();
 
     // Init interactions
     initSidebar();
@@ -558,10 +849,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show home
     navigate('home');
 });
-
 // ============================================================
 //  DOCUMENT MANAGEMENT — add this to the bottom of dashboard.js
-//  (before the closing DOMContentLoaded or at the end of the file)
 // ============================================================
 
 let allDocs = [];
@@ -595,11 +884,7 @@ async function renderDocumentsSection() {
             </select>
 
             ${isAdmin ? `
-            <button class="action-btn" id="uploadDocBtn" style="
-                max-width:400px; background:#0b1523; border:1px solid #16263b;
-                border-radius:8px; padding:10px 16px; color:var(--text-clr);
-                font-family:monospace; font-size:0.9rem; cursor:pointer;
-            ">
+            <button class="action-btn" id="uploadDocBtn" >
                 <i class="fas fa-upload"></i> Upload Document
             </button>
             <input type="file" id="docFileInput" accept=".pdf,.docx,.xlsx,.png,.jpg,.jpeg" hidden>
@@ -811,6 +1096,9 @@ function renderDocRows(docs) {
             <td>${escHtml(doc.uploader_name || 'Admin')}</td>
             <td>${new Date(doc.uploaded_at).toLocaleDateString()}</td>
             <td style="display:flex; gap:8px; align-items:center;">
+                <a href="DocumentView.html?id=${doc.id}" class="tbl-action-btn" title="View">
+                    <i class="fas fa-eye"></i>
+                </a>
                 <button class="tbl-action-btn" title="Download"
                     onclick="downloadDoc(${doc.id}, '${escHtml(doc.filename)}')">
                     <i class="fas fa-download"></i>
@@ -970,3 +1258,5 @@ function showDocStatus(message, type) {
     el.hidden = false;
     setTimeout(() => { el.hidden = true; }, 4000);
 }
+
+// Meeting Management (5.6) → see client/js/meetings.js  |  Styles → client/css/meetings.css
