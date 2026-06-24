@@ -7,6 +7,8 @@ const session = require('express-session');
 const authRoutes = require('./server/routes/auth');
 const documentRoutes = require('./server/routes/documents');
 
+const financialRoutes = require('./server/routes/financial');
+
 const app = express();
 
 // Middleware
@@ -24,6 +26,8 @@ app.use(express.static(path.join(__dirname, 'client')));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
+
+app.use('/api/financial', financialRoutes);
 
 app.get('/', (req, res) => {
     res.redirect('/pages/Login.html');

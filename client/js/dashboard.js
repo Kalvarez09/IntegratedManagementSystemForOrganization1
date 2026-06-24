@@ -7,7 +7,7 @@ const SECTIONS = {
         features: ['Data Import', 'Data Validation', 'Migration Tools', 'Audit Logs']
     }
     ,
-    
+
     'documents': {
         icon: 'fas fa-folder-open ',
         title: '5.3 Document Management System',
@@ -52,15 +52,15 @@ const SECTIONS = {
     }
 };
 //////////MEMBER ROLES////////////
-const roleLabels  = {
-        admin:          'Admin',
-        president:      'President',
-        vice_president: 'Vice President',
-        secretary:      'Secretary',
-        treasurer:      'Treasurer',
-        technical_lead: 'Technical Lead',
-        member:         'Member',
-    };
+const roleLabels = {
+    admin: 'Admin',
+    president: 'President',
+    vice_president: 'Vice President',
+    secretary: 'Secretary',
+    treasurer: 'Treasurer',
+    technical_lead: 'Technical Lead',
+    member: 'Member',
+};
 
 // --- Helpers ---
 
@@ -103,8 +103,8 @@ function renderHome(user) {
                 </p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-                        `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
-                    ).join('')}
+            `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
+        ).join('')}
                 </div>
             </div>
         `;
@@ -128,8 +128,8 @@ function renderHome(user) {
                 <p class="info-card-body">Here is a preview of what is being built for you:</p>
                 <div class="sprint-tags">
                     ${Object.values(SECTIONS).map(s =>
-                        `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
-                    ).join('')}
+            `<span class="sprint-tag green">${s.scrum}: ${s.title}</span>`
+        ).join('')}
                 </div>
             </div>
         `;
@@ -177,8 +177,8 @@ function renderFutureSection(id) {
             </div>
             <div class="feature-chips">
                 ${data.features.map(f =>
-                    `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
-                ).join('')}
+        `<span class="feature-chip"><i class="fas fa-circle-check"></i>${f}</span>`
+    ).join('')}
             </div>
         </div>
     `;
@@ -325,8 +325,8 @@ async function renderMembersSection() {
     });
 
     document.getElementById('addMemberBtn').addEventListener('click', () => {
-    openModal('addMemberModal');
-    }); 
+        openModal('addMemberModal');
+    });
 
     let pendingImportRows = [];
 
@@ -371,37 +371,37 @@ async function renderMembersSection() {
     });
 
     document.getElementById('csvFileInput').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+        const file = e.target.files[0];
+        if (!file) return;
 
-    hideImportButton();
-    showUploadStatus('Validating file...', 'info');
+        hideImportButton();
+        showUploadStatus('Validating file...', 'info');
 
-    const formData = new FormData();
-    formData.append('file', file);
+        const formData = new FormData();
+        formData.append('file', file);
 
-    try {
-        const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
-        const data = await res.json();
+        try {
+            const res = await fetch('/api/auth/upload-members', { method: 'POST', body: formData });
+            const data = await res.json();
 
-        if (data.success) {
-            const hasIssues = (data.duplicates?.length > 0) || (data.missingRows?.length > 0);
-            showUploadStatus(data.message, hasIssues ? 'error' : 'success', null, data.duplicates, data.missingRows, data.standardizedRows);
-            if (data.standardizedRows?.length > 0) {
-                pendingImportRows = data.standardizedRows;
-                showImportButton(data.standardizedRows.length);
+            if (data.success) {
+                const hasIssues = (data.duplicates?.length > 0) || (data.missingRows?.length > 0);
+                showUploadStatus(data.message, hasIssues ? 'error' : 'success', null, data.duplicates, data.missingRows, data.standardizedRows);
+                if (data.standardizedRows?.length > 0) {
+                    pendingImportRows = data.standardizedRows;
+                    showImportButton(data.standardizedRows.length);
+                }
+            } else {
+                showUploadStatus(data.message, 'error', data.errors, data.duplicates, data.missingRows);
             }
-        } else {
-            showUploadStatus(data.message, 'error', data.errors, data.duplicates, data.missingRows);
+        } catch {
+            showUploadStatus('Could not connect to server.', 'error');
         }
-    } catch {
-        showUploadStatus('Could not connect to server.', 'error');
-    }
 
-    e.target.value = '';
-});
+        e.target.value = '';
+    });
 
-   
+
 
     document.getElementById('memberSearch').addEventListener('input', e => {
         filterMembers(e.target.value);
@@ -549,9 +549,9 @@ async function executeRemove(memberId) {
 
 async function submitAddMember() {
     const full_name = document.getElementById('newMemberName').value.trim();
-    const email    = document.getElementById('newMemberEmail').value.trim();
-    const role     = document.getElementById('newMemberRole').value;
-    const errorEl  = document.getElementById('addMemberError');
+    const email = document.getElementById('newMemberEmail').value.trim();
+    const role = document.getElementById('newMemberRole').value;
+    const errorEl = document.getElementById('addMemberError');
     const submitBtn = document.getElementById('addMemberSubmitBtn');
 
     errorEl.hidden = true;
@@ -592,17 +592,17 @@ async function submitAddMember() {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Add Member';
 }
- function showUploadStatus(message, type, errors = null, duplicates = null, missingRows = null, summary = null) {
+function showUploadStatus(message, type, errors = null, duplicates = null, missingRows = null, summary = null) {
     const el = document.getElementById('uploadStatus');
     el.className = `upload-status ${type}`;
 
     const sectionStyle = 'margin-top:10px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.15);';
-    const labelStyle   = 'font-weight:700; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px;';
-    const listStyle    = 'margin:4px 0 0 0; padding-left:18px;';
-    const itemStyle    = 'margin-bottom:2px; font-size:0.85rem;';
-    const tableStyle   = 'width:100%; border-collapse:collapse; font-size:0.82rem;';
-    const thStyle      = 'text-align:left; padding:4px 8px; font-weight:600; opacity:0.75;';
-    const tdStyle      = 'padding:4px 8px;';
+    const labelStyle = 'font-weight:700; font-size:0.8rem; letter-spacing:0.05em; text-transform:uppercase; margin-bottom:6px;';
+    const listStyle = 'margin:4px 0 0 0; padding-left:18px;';
+    const itemStyle = 'margin-bottom:2px; font-size:0.85rem;';
+    const tableStyle = 'width:100%; border-collapse:collapse; font-size:0.82rem;';
+    const thStyle = 'text-align:left; padding:4px 8px; font-weight:600; opacity:0.75;';
+    const tdStyle = 'padding:4px 8px;';
 
     let html = `<p style="font-weight:600; margin-bottom:4px;">${escHtml(message)}</p>`;
 
@@ -790,7 +790,7 @@ function initProfile() {
 
 /// Look for documents
 Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'financial')
     .forEach(renderFutureSection);
 
 renderMembersSection();
@@ -811,7 +811,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('avatarInitials').textContent = getInitials(user.full_name);
     document.getElementById('profileName').textContent = user.full_name;
 
-    
+
 
     // Topbar role badge
     const badge = document.getElementById('roleBadge');
@@ -835,12 +835,13 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome(user);
 
     Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
-    .forEach(renderFutureSection);
+        .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+        .forEach(renderFutureSection);
 
     renderMembersSection();
     renderDocumentsSection();
     renderMeetingsSection();
+    renderFinancialSection();
 
     // Init interactions
     initSidebar();
@@ -1260,3 +1261,415 @@ function showDocStatus(message, type) {
 }
 
 // Meeting Management (5.6) → see client/js/meetings.js  |  Styles → client/css/meetings.css
+
+let allTransactions = [];
+
+async function renderFinancialSection() {
+    const el = document.getElementById('section-financial');
+
+    el.innerHTML = `
+        <div class="section-hdr">
+            <div class="section-icon-box"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <h1 class="section-title-text">5.7 Financial Record Management</h1>
+                <p class="section-scrum-badge">SCRUM-57 · SCRUM-58 · SCRUM-59 · SCRUM-60 · SCRUM-61</p>
+            </div>
+        </div>
+
+        <!-- Summary Strip SCRUM-60 -->
+        <div style="display:flex; gap:16px; margin-bottom:20px; flex-wrap:wrap;">
+            <div style="flex:1; min-width:180px; background:#0b1523; border:1px solid #22c55e44; border-radius:12px; padding:20px;">
+                <p style="color:#475569; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-family:monospace; margin:0 0 8px;">Total Income</p>
+                <p id="finTotalIncome" style="color:#4ade80; font-size:1.6rem; font-weight:700; font-family:monospace; margin:0;">—</p>
+            </div>
+            <div style="flex:1; min-width:180px; background:#0b1523; border:1px solid #ef444444; border-radius:12px; padding:20px;">
+                <p style="color:#475569; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-family:monospace; margin:0 0 8px;">Total Expenditure</p>
+                <p id="finTotalExpenditure" style="color:#f87171; font-size:1.6rem; font-weight:700; font-family:monospace; margin:0;">—</p>
+            </div>
+            <div style="flex:1; min-width:180px; background:#0b1523; border:1px solid #3b82f644; border-radius:12px; padding:20px;">
+                <p style="color:#475569; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; font-family:monospace; margin:0 0 8px;">Net Balance</p>
+                <p id="finNetBalance" style="font-size:1.6rem; font-weight:700; font-family:monospace; margin:0;">—</p>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="members-toolbar" style="flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+            <input type="text" id="finSearch" class="member-search-input"
+                placeholder="Search description or category...">
+            <select id="finTypeFilter" class="member-search-input" style="max-width:160px; cursor:pointer;">
+                <option value="">All Types</option>
+                <option value="income">Income</option>
+                <option value="expenditure">Expenditure</option>
+            </select>
+            <select id="finCategoryFilter" class="member-search-input" style="max-width:180px; cursor:pointer;">
+                <option value="">All Categories</option>
+                <option value="Membership Fees">Membership Fees</option>
+                <option value="Donations">Donations</option>
+                <option value="Event Revenue">Event Revenue</option>
+                <option value="Venue Hire">Venue Hire</option>
+                <option value="Supplies">Supplies</option>
+                <option value="Software">Software</option>
+                <option value="Salaries">Salaries</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="date" id="finDateFrom" class="member-search-input" style="max-width:160px;" title="From date">
+            <input type="date" id="finDateTo"   class="member-search-input" style="max-width:160px;" title="To date">
+            <button id="addIncomeBtn" style="background:#0b1523;border:1px solid #22c55e44;border-radius:8px;padding:10px 16px;color:#4ade80;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                <i class="fas fa-plus"></i> Add Income
+            </button>
+            <button id="addExpenditureBtn" style="background:#0b1523;border:1px solid #ef444444;border-radius:8px;padding:10px 16px;color:#f87171;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                <i class="fas fa-minus"></i> Add Expenditure
+            </button>
+            <button id="generateReportBtn" style="background:#0b1523;border:1px solid #3b82f644;border-radius:8px;padding:10px 16px;color:#7ab8f5;font-family:monospace;font-size:0.9rem;cursor:pointer;margin-left:auto;">
+                <i class="fas fa-file-export"></i> Generate Report
+            </button>
+        </div>
+
+        <div id="finStatus" class="upload-status" hidden></div>
+
+        <!-- Transactions Table SCRUM-59 -->
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="finTableBody">
+                    <tr><td colspan="6" class="members-loading">Loading transactions...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Add Income Modal SCRUM-57 -->
+        <div class="modal-overlay" id="addIncomeModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Add Income</h3>
+                    <button class="modal-close" onclick="closeModal('addIncomeModal')">✕</button>
+                </div>
+                <div id="incomeError" class="upload-status error" hidden></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Amount (£)</label>
+                        <input type="number" id="incomeAmount" min="0.01" step="0.01" class="member-search-input" style="max-width:100%" placeholder="e.g. 150.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="incomeDate" class="member-search-input" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="incomeCategory" class="member-search-input" style="max-width:100%;cursor:pointer;">
+                            <option value="Membership Fees">Membership Fees</option>
+                            <option value="Donations">Donations</option>
+                            <option value="Event Revenue">Event Revenue</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="incomeDescription" class="member-search-input" style="max-width:100%" placeholder="e.g. Annual membership fees collected">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('addIncomeModal')" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">Cancel</button>
+                    <button id="submitIncomeBtn" onclick="submitTransaction('income')" style="background:#0b1523;border:1px solid #22c55e44;border-radius:8px;padding:10px 16px;color:#4ade80;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                        <i class="fas fa-plus"></i> Add Income
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Expenditure Modal SCRUM-58 -->
+        <div class="modal-overlay" id="addExpenditureModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Add Expenditure</h3>
+                    <button class="modal-close" onclick="closeModal('addExpenditureModal')">✕</button>
+                </div>
+                <div id="expenditureError" class="upload-status error" hidden></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Amount (£)</label>
+                        <input type="number" id="expenditureAmount" min="0.01" step="0.01" class="member-search-input" style="max-width:100%" placeholder="e.g. 200.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="expenditureDate" class="member-search-input" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="expenditureCategory" class="member-search-input" style="max-width:100%;cursor:pointer;">
+                            <option value="Venue Hire">Venue Hire</option>
+                            <option value="Supplies">Supplies</option>
+                            <option value="Software">Software</option>
+                            <option value="Salaries">Salaries</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <input type="text" id="expenditureDescription" class="member-search-input" style="max-width:100%" placeholder="e.g. Office supplies for Q1">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('addExpenditureModal')" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">Cancel</button>
+                    <button id="submitExpenditureBtn" onclick="submitTransaction('expenditure')" style="background:#0b1523;border:1px solid #ef444444;border-radius:8px;padding:10px 16px;color:#f87171;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                        <i class="fas fa-minus"></i> Add Expenditure
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Confirm Modal -->
+        <div class="modal-overlay" id="deleteTransactionModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Delete Transaction</h3>
+                    <button class="modal-close" onclick="closeModal('deleteTransactionModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--text-primary);margin-bottom:8px">Are you sure you want to delete this transaction?</p>
+                    <p style="color:var(--text-secondary);font-size:0.85rem">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('deleteTransactionModal')" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">Cancel</button>
+                    <button class="danger-btn" id="confirmDeleteTransactionBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generate Report Modal SCRUM-61 -->
+        <div class="modal-overlay" id="generateReportModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Generate Financial Report</h3>
+                    <button class="modal-close" onclick="closeModal('generateReportModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>From Date</label>
+                        <input type="date" id="reportDateFrom" class="member-search-input" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>To Date</label>
+                        <input type="date" id="reportDateTo" class="member-search-input" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Format</label>
+                        <select id="reportFormat" class="member-search-input" style="max-width:100%;cursor:pointer;">
+                            <option value="csv">CSV</option>
+                            <option value="pdf">PDF</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button onclick="closeModal('generateReportModal')" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">Cancel</button>
+                    <button onclick="downloadReport()" style="background:#0b1523;border:1px solid #3b82f644;border-radius:8px;padding:10px 16px;color:#7ab8f5;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                        <i class="fas fa-download"></i> Download Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Wire up buttons
+    document.getElementById('addIncomeBtn').addEventListener('click', () => {
+        document.getElementById('incomeError').hidden = true;
+        document.getElementById('incomeDate').value = new Date().toISOString().split('T')[0];
+        openModal('addIncomeModal');
+    });
+    document.getElementById('addExpenditureBtn').addEventListener('click', () => {
+        document.getElementById('expenditureError').hidden = true;
+        document.getElementById('expenditureDate').value = new Date().toISOString().split('T')[0];
+        openModal('addExpenditureModal');
+    });
+    document.getElementById('generateReportBtn').addEventListener('click', () => {
+        openModal('generateReportModal');
+    });
+
+    ['finSearch', 'finTypeFilter', 'finCategoryFilter', 'finDateFrom', 'finDateTo'].forEach(id => {
+        document.getElementById(id).addEventListener('input', filterTransactions);
+        document.getElementById(id).addEventListener('change', filterTransactions);
+    });
+
+    await loadTransactions();
+}
+
+async function loadTransactions() {
+    const tbody = document.getElementById('finTableBody');
+    try {
+        const res = await fetch('/api/financial');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allTransactions = data.transactions;
+        renderTransactionRows(allTransactions);
+        updateFinSummary(allTransactions);
+    } catch {
+        tbody.innerHTML = `<tr><td colspan="6" class="members-loading">Could not load transactions.</td></tr>`;
+    }
+}
+
+function renderTransactionRows(txns) {
+    const tbody = document.getElementById('finTableBody');
+    if (txns.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="members-loading">No transactions recorded.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = txns.map(t => {
+        const isIncome = t.type === 'income';
+        const pill = isIncome
+            ? `<span class="role-pill" style="background:#22c55e22;color:#4ade80;border:1px solid #22c55e44;">Income</span>`
+            : `<span class="role-pill" style="background:#ef444422;color:#f87171;border:1px solid #ef444444;">Expenditure</span>`;
+        const amt = isIncome
+            ? `<span style="color:#4ade80;">+£${parseFloat(t.amount).toFixed(2)}</span>`
+            : `<span style="color:#f87171;">-£${parseFloat(t.amount).toFixed(2)}</span>`;
+        return `
+            <tr>
+                <td>${pill}</td>
+                <td>${escHtml(t.description || '—')}</td>
+                <td><span class="role-pill member">${escHtml(t.category || 'Other')}</span></td>
+                <td>${amt}</td>
+                <td>${new Date(t.date).toLocaleDateString()}</td>
+                <td>
+                    <button class="tbl-action-btn delete" title="Delete"
+                        onclick="confirmDeleteTransaction(${t.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function updateFinSummary(txns) {
+    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
+    const expenditure = txns.filter(t => t.type === 'expenditure').reduce((s, t) => s + parseFloat(t.amount), 0);
+    const balance = income - expenditure;
+    document.getElementById('finTotalIncome').textContent = `£${income.toFixed(2)}`;
+    document.getElementById('finTotalExpenditure').textContent = `£${expenditure.toFixed(2)}`;
+    const balEl = document.getElementById('finNetBalance');
+    balEl.textContent = `£${balance.toFixed(2)}`;
+    balEl.style.color = balance >= 0 ? '#4ade80' : '#f87171';
+}
+
+function filterTransactions() {
+    const q = document.getElementById('finSearch').value.toLowerCase();
+    const type = document.getElementById('finTypeFilter').value;
+    const cat = document.getElementById('finCategoryFilter').value;
+    const from = document.getElementById('finDateFrom').value;
+    const to = document.getElementById('finDateTo').value;
+    const filtered = allTransactions.filter(t => {
+        const matchQ = !q || (t.description || '').toLowerCase().includes(q) || (t.category || '').toLowerCase().includes(q);
+        const matchType = !type || t.type === type;
+        const matchCat = !cat || t.category === cat;
+        const d = new Date(t.date);
+        const matchFrom = !from || d >= new Date(from);
+        const matchTo = !to || d <= new Date(to);
+        return matchQ && matchType && matchCat && matchFrom && matchTo;
+    });
+    renderTransactionRows(filtered);
+    updateFinSummary(filtered);
+}
+
+async function submitTransaction(type) {
+    const cap = type.charAt(0).toUpperCase() + type.slice(1);
+    const amount = document.getElementById(`${type}Amount`).value;
+    const date = document.getElementById(`${type}Date`).value;
+    const category = document.getElementById(`${type}Category`).value;
+    const description = document.getElementById(`${type}Description`).value.trim();
+    const errorEl = document.getElementById(`${type}Error`);
+    const submitBtn = document.getElementById(`submit${cap}Btn`);
+
+    errorEl.hidden = true;
+
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+        errorEl.textContent = 'Please enter a valid amount greater than 0.';
+        errorEl.hidden = false;
+        return;
+    }
+    if (!date) {
+        errorEl.textContent = 'Please select a date.';
+        errorEl.hidden = false;
+        return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+    try {
+        const res = await fetch('/api/financial', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, amount: parseFloat(amount), date, category, description })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            closeModal(`add${cap}Modal`);
+            showFinStatus(data.message || 'Transaction saved.', 'success');
+            await loadTransactions();
+        } else {
+            errorEl.textContent = data.error || 'Failed to save transaction.';
+            errorEl.hidden = false;
+        }
+    } catch {
+        errorEl.textContent = 'Could not connect to server.';
+        errorEl.hidden = false;
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = type === 'income'
+        ? '<i class="fas fa-plus"></i> Add Income'
+        : '<i class="fas fa-minus"></i> Add Expenditure';
+}
+
+function confirmDeleteTransaction(id) {
+    document.getElementById('confirmDeleteTransactionBtn').onclick = () => executeDeleteTransaction(id);
+    openModal('deleteTransactionModal');
+}
+
+async function executeDeleteTransaction(id) {
+    closeModal('deleteTransactionModal');
+    try {
+        const res = await fetch(`/api/financial/${id}`, { method: 'DELETE' });
+        const data = await res.json();
+        showFinStatus(data.message || 'Transaction deleted.', res.ok ? 'success' : 'error');
+        if (res.ok) await loadTransactions();
+    } catch {
+        showFinStatus('Could not connect to server.', 'error');
+    }
+}
+
+async function downloadReport() {
+    const from = document.getElementById('reportDateFrom').value;
+    const to = document.getElementById('reportDateTo').value;
+    const format = document.getElementById('reportFormat').value;
+    if (!from || !to) { alert('Please select both a from and to date.'); return; }
+    closeModal('generateReportModal');
+    const filename = `financial-report-${from}-to-${to}.${format}`;
+    try {
+        const res = await fetch(`/api/financial/report?from=${from}&to=${to}&format=${format}`);
+        if (!res.ok) { showFinStatus('Could not generate report.', 'error'); return; }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+        showFinStatus(`Report downloaded: ${filename}`, 'success');
+    } catch {
+        showFinStatus('Could not connect to server.', 'error');
+    }
+}
+
+function showFinStatus(message, type) {
+    const el = document.getElementById('finStatus');
+    el.className = `upload-status ${type}`;
+    el.innerHTML = `<p>${escHtml(message)}</p>`;
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 4000);
+}
