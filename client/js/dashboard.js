@@ -295,7 +295,7 @@ async function renderMembersSection() {
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="action-btn outline-btn" id="cancel-btn" onclick="closeModal('addMemberModal')">Cancel</button>
+                <button class="danger-btn outline-btn"  onclick="closeModal('addMemberModal')">Cancel</button>
                 <button class="action-btn" id="addMemberSubmitBtn" class="add-btn" onclick="submitAddMember()">Add Member</button>
             </div>
         </div>
@@ -836,11 +836,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     Object.keys(SECTIONS)
     .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'e-voting')
     .forEach(renderFutureSection);
 
     renderMembersSection();
     renderDocumentsSection();
     renderMeetingsSection();
+    renderEvotingSection();
 
     // Init interactions
     initSidebar();
@@ -957,15 +959,13 @@ async function renderDocumentsSection() {
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="action-btn outline-btn" id="cancelUploadBtn"
-                        onclick="closeModal('uploadDocModal')"
-                        style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                    <button class="danger-btn  outline-btn" id="cancelUploadBtn"
+                        onclick="closeModal('uploadDocModal')">
                         Cancel
                     </button>
-                    <button id="submitUploadBtn"
-                        style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 16px;color:var(--text-clr);font-family:monospace;font-size:0.9rem;cursor:pointer;"
+                    <button class="action-btn" id="submitUploadBtn"
                         onclick="submitDocUpload()">
-                        <i class="fas fa-upload"></i> Upload
+                        <i class="fas fa-upload "></i> Upload
                     </button>
                 </div>
             </div>
@@ -1260,3 +1260,390 @@ function showDocStatus(message, type) {
 }
 
 // Meeting Management (5.6) → see client/js/meetings.js  |  Styles → client/css/meetings.css
+
+// ============================================================
+//  E-VOTING — SCRUM-27/28/31/32
+// ============================================================
+
+let allPolls = [];
+
+async function renderEvotingSection() {
+    const user = getUser();
+    const isAdmin = user?.role === 'admin';
+    const el = document.getElementById('section-e-voting');
+
+    el.innerHTML = `
+        <div class="section-hdr">
+            <div class="section-icon-box"><i class="fas fa-square-poll-vertical"></i></div>
+            <div>
+                <h1 class="section-title-text">5.4 Electronic Voting System</h1>
+                <p class="section-scrum-badge">SCRUM-27 · SCRUM-28 · SCRUM-31 · SCRUM-32</p>
+            </div>
+        </div>
+
+        <div class="members-toolbar">
+            <input type="text" id="pollSearch" class="member-search-input"
+                placeholder="Search polls...">
+            <select id="pollStatusFilter" class="member-search-input"
+                style="max-width:180px; cursor:pointer;">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="closed">Closed</option>
+            </select>
+            ${isAdmin ? `
+            <button class="action-btn" id="createPollBtn">
+                <i class="fas fa-plus "></i> Create Poll
+            </button>` : ''}
+        </div>
+
+        <div id="pollStatus" class="upload-status" hidden></div>
+
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Poll</th>
+                        <th>Status</th>
+                        <th>Options</th>
+                        <th>Opens</th>
+                        <th>Closes</th>
+                        <th>Created By</th>
+                        ${isAdmin ? '<th>Actions</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody id="pollsTableBody">
+                    <tr><td colspan="${isAdmin ? 7 : 6}"
+                        class="members-loading">Loading polls...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        ${isAdmin ? `
+        <!-- Create Poll Modal -->
+        <div class="modal-overlay" id="createPollModal" hidden>
+            <div class="modal-card" style="max-width:560px;">
+                <div class="modal-header">
+                    <h3>Create New Poll</h3>
+                    <button class="modal-close" onclick="closeModal('createPollModal')">✕</button>
+                </div>
+                <div id="createPollError" class="upload-status error" hidden></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Poll Title</label>
+                        <input type="text" id="pollTitle" class="member-search-input"
+                            placeholder="e.g. Board Election 2026" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Description <span style="color:var(--secondary-text-clr);
+                            font-size:0.75rem">(optional)</span></label>
+                        <textarea id="pollDescription" class="member-search-input"
+                            placeholder="What is this poll about?"
+                            style="max-width:100%; resize:vertical; min-height:70px;
+                                padding:10px; font-family:monospace;"></textarea>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                        <div class="form-group">
+                            <label>Start Date & Time</label>
+                            <input type="datetime-local" id="pollStart"
+                                class="member-search-input" style="max-width:100%">
+                        </div>
+                        <div class="form-group">
+                            <label>End Date & Time</label>
+                            <input type="datetime-local" id="pollEnd"
+                                class="member-search-input" style="max-width:100%">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Access</label>
+                        <select id="pollAccess" class="member-search-input"
+                            style="max-width:100%; cursor:pointer;">
+                            <option value="members">Members & Admins</option>
+                            <option value="admin">Admins Only</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Answer Options
+                            <span style="color:var(--secondary-text-clr);
+                                font-size:0.75rem">(minimum 2)</span>
+                        </label>
+                        <div id="pollOptionsList">
+                            <div class="poll-option-row">
+                                <input type="text" class="poll-option-input
+                                    member-search-input"
+                                    placeholder="Option 1" style="flex:1">
+                                <button class="tbl-action-btn delete remove-option-btn"
+                                    onclick="removePollOption(this)" disabled>
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="poll-option-row">
+                                <input type="text" class="poll-option-input
+                                    member-search-input"
+                                    placeholder="Option 2" style="flex:1">
+                                <button class="tbl-action-btn delete remove-option-btn"
+                                    onclick="removePollOption(this)" disabled>
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="action-btn outline-btn" 
+                            onclick="addPollOption()"
+                            style="margin-top:10px; width:100%; max-width: 400px;background: #0b1523;border: 1px solid #16263b;border-radius: 8px;padding: 10px 16px;color: var(--text-clr);font-family: monospace;font-size: 0.9rem;cursor: pointer;">
+                            <i class="fas fa-plus"></i> Add Option
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="danger-btn outline-btn"
+                        onclick="closeModal('createPollModal')">Cancel</button>
+                    <button class="action-btn" id="createPollSubmitBtn"
+                        onclick="submitCreatePoll()">
+                        <i class="fas fa-square-poll-vertical"></i> Create Poll
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Poll Modal -->
+        <div class="modal-overlay" id="deletePollModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Delete Poll</h3>
+                    <button class="modal-close"
+                        onclick="closeModal('deletePollModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--text-clr);margin-bottom:8px">
+                        Are you sure you want to delete
+                        <strong id="deletePollName"></strong>?
+                    </p>
+                    <p style="color:var(--secondary-text-clr);font-size:0.85rem">
+                        All votes and options will be permanently removed.
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn outline-btn"
+                        onclick="closeModal('deletePollModal')">Cancel</button>
+                    <button class="danger-btn" id="confirmDeletePollBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+
+    document.getElementById('pollSearch').addEventListener('input', filterPolls);
+    document.getElementById('pollStatusFilter').addEventListener('change', filterPolls);
+
+    if (isAdmin) {
+        document.getElementById('createPollBtn').addEventListener('click', () => {
+            document.getElementById('createPollError').hidden = true;
+            document.getElementById('pollTitle').value = '';
+            document.getElementById('pollDescription').value = '';
+            document.getElementById('pollStart').value = '';
+            document.getElementById('pollEnd').value = '';
+            document.getElementById('pollAccess').value = 'members';
+            // Reset options to two blank rows
+            const list = document.getElementById('pollOptionsList');
+            list.innerHTML = '';
+            addPollOption(); addPollOption();
+            openModal('createPollModal');
+        });
+    }
+
+    await loadPolls();
+}
+
+async function loadPolls() {
+    const tbody = document.getElementById('pollsTableBody');
+    try {
+        const res = await fetch('/api/polls');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allPolls = data.polls;
+        renderPollRows(allPolls);
+    } catch {
+        tbody.innerHTML = `<tr><td colspan="7"
+            class="members-loading">Could not load polls.</td></tr>`;
+    }
+}
+
+function renderPollRows(polls) {
+    const user = getUser();
+    const isAdmin = user?.role === 'admin';
+    const tbody = document.getElementById('pollsTableBody');
+
+    if (polls.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="${isAdmin ? 7 : 6}"
+            class="members-loading">No polls found.</td></tr>`;
+        return;
+    }
+
+    const statusClass = { active: 'success', scheduled: 'info', closed: '' };
+    const statusLabel = { active: 'Active', scheduled: 'Scheduled', closed: 'Closed' };
+
+    tbody.innerHTML = polls.map(p => {
+        const optCount = p.options?.filter(o => o.id).length ?? 0;
+        const cls = statusClass[p.status] || '';
+        const lbl = statusLabel[p.status] || p.status;
+
+        return `
+        <tr>
+            <td>
+                <div class="member-cell">
+                    <div class="member-avatar-sm"
+                        style="background:#0d2540;border-color:#1e4a7a;">
+                        <i class="fas fa-square-poll-vertical"
+                            style="font-size:0.75rem;"></i>
+                    </div>
+                    <span>${escHtml(p.title)}</span>
+                </div>
+            </td>
+            <td><span class="poll-status-pill ${cls}">${lbl}</span></td>
+            <td>${optCount} option${optCount !== 1 ? 's' : ''}</td>
+            <td>${new Date(p.start_date).toLocaleDateString()}</td>
+            <td>${new Date(p.end_date).toLocaleDateString()}</td>
+            <td>${escHtml(p.creator_name || 'Admin')}</td>
+            ${isAdmin ? `
+            <td>
+                <button class="tbl-action-btn delete" title="Delete poll"
+                    onclick="confirmDeletePoll(${p.id}, '${escHtml(p.title)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>` : ''}
+        </tr>`;
+    }).join('');
+}
+
+function filterPolls() {
+    const q   = document.getElementById('pollSearch').value.toLowerCase();
+    const st  = document.getElementById('pollStatusFilter').value;
+    renderPollRows(allPolls.filter(p =>
+        (!q  || p.title.toLowerCase().includes(q)) &&
+        (!st || p.status === st)
+    ));
+}
+
+function addPollOption() {
+    const list = document.getElementById('pollOptionsList');
+    const count = list.querySelectorAll('.poll-option-row').length + 1;
+
+    const row = document.createElement('div');
+    row.className = 'poll-option-row';
+    row.innerHTML = `
+        <input type="text" class="poll-option-input member-search-input"
+            placeholder="Option ${count}" style="flex:1">
+        <button class="tbl-action-btn delete remove-option-btn"
+            onclick="removePollOption(this)">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    list.appendChild(row);
+    updateRemoveButtons();
+}
+
+function removePollOption(btn) {
+    const list = document.getElementById('pollOptionsList');
+    if (list.querySelectorAll('.poll-option-row').length <= 2) return;
+    btn.closest('.poll-option-row').remove();
+    updateRemoveButtons();
+}
+
+function updateRemoveButtons() {
+    const list = document.getElementById('pollOptionsList');
+    const rows = list.querySelectorAll('.poll-option-row');
+    rows.forEach(row => {
+        const btn = row.querySelector('.remove-option-btn');
+        btn.disabled = rows.length <= 2;
+    });
+}
+
+async function submitCreatePoll() {
+    const title       = document.getElementById('pollTitle').value.trim();
+    const description = document.getElementById('pollDescription').value.trim();
+    const start_date  = document.getElementById('pollStart').value;
+    const end_date    = document.getElementById('pollEnd').value;
+    const access      = document.getElementById('pollAccess').value;
+    const errorEl     = document.getElementById('createPollError');
+    const submitBtn   = document.getElementById('createPollSubmitBtn');
+
+    const optionInputs = document.querySelectorAll('.poll-option-input');
+    const options = Array.from(optionInputs)
+        .map(i => i.value.trim())
+        .filter(v => v !== '');
+
+    errorEl.hidden = true;
+
+    if (!title) {
+        errorEl.textContent = 'Poll title is required.';
+        errorEl.hidden = false; return;
+    }
+    if (!start_date || !end_date) {
+        errorEl.textContent = 'Start and end dates are required.';
+        errorEl.hidden = false; return;
+    }
+    if (new Date(end_date) <= new Date(start_date)) {
+        errorEl.textContent = 'End date must be after start date.';
+        errorEl.hidden = false; return;
+    }
+    if (options.length < 2) {
+        errorEl.textContent = 'Please fill in at least two answer options.';
+        errorEl.hidden = false; return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+    try {
+        const res = await fetch('/api/polls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, start_date, end_date,
+                access, options })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeModal('createPollModal');
+            showPollStatus(data.message, 'success');
+            await loadPolls();
+        } else {
+            errorEl.textContent = data.message;
+            errorEl.hidden = false;
+        }
+    } catch {
+        errorEl.textContent = 'Could not connect to server.';
+        errorEl.hidden = false;
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML =
+        '<i class="fas fa-square-poll-vertical "></i> Create Poll';
+}
+
+function confirmDeletePoll(pollId, pollTitle) {
+    document.getElementById('deletePollName').textContent = pollTitle;
+    document.getElementById('confirmDeletePollBtn').onclick =
+        () => executeDeletePoll(pollId);
+    openModal('deletePollModal');
+}
+
+async function executeDeletePoll(pollId) {
+    closeModal('deletePollModal');
+    try {
+        const res = await fetch(`/api/polls/${pollId}`, { method: 'DELETE' });
+        const data = await res.json();
+        showPollStatus(data.message || 'Poll deleted.', res.ok ? 'success' : 'error');
+        if (res.ok) await loadPolls();
+    } catch {
+        showPollStatus('Could not connect to server.', 'error');
+    }
+}
+
+function showPollStatus(message, type) {
+    const el = document.getElementById('pollStatus');
+    el.className = `upload-status ${type}`;
+    el.innerHTML = `<p>${escHtml(message)}</p>`;
+    el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 4000);
+}
