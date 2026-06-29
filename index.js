@@ -9,6 +9,7 @@ const documentRoutes = require('./server/routes/documents');
 
 const financialRoutes = require('./server/routes/financial');
 const meetingRoutes   = require('./server/routes/meetings');
+const pollRoutes      = require('./server/routes/polls');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use('/api/documents', documentRoutes);
 
 app.use('/api/financial', financialRoutes);
 app.use('/api/meetings', meetingRoutes);
+app.use('/api/polls',    pollRoutes);
 
 app.get('/', (req, res) => {
     res.redirect('/pages/Login.html');

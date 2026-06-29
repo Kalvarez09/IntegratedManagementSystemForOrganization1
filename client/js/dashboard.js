@@ -790,7 +790,7 @@ function initProfile() {
 
 /// Look for documents
 Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'financial')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'financial' && id !== 'e-voting')
     .forEach(renderFutureSection);
 
 renderMembersSection();
@@ -835,13 +835,14 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome(user);
 
     Object.keys(SECTIONS)
-        .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
+        .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings' && id !== 'e-voting')
         .forEach(renderFutureSection);
 
     renderMembersSection();
     renderDocumentsSection();
     renderMeetingsSection();
     renderFinancialSection();
+    renderEVotingSection();
 
     // Init interactions
     initSidebar();
@@ -1671,5 +1672,417 @@ function showFinStatus(message, type) {
     el.className = `upload-status ${type}`;
     el.innerHTML = `<p>${escHtml(message)}</p>`;
     el.hidden = false;
+    setTimeout(() => { el.hidden = true; }, 4000);
+}
+
+// ============================================================
+//  5.4 ELECTRONIC VOTING — SCRUM-27 / 28 / 29 / 30 / 31 / 32
+// ============================================================
+
+let allPolls      = [];
+let pollOptCount  = 0;
+
+async function renderEVotingSection() {
+    const user    = getUser();
+    const isAdmin = user?.role === 'admin';
+    const el      = document.getElementById('section-e-voting');
+    if (!el) return;
+
+    el.innerHTML = `
+        <div class="section-hdr">
+            <div class="section-icon-box"><i class="fas fa-square-poll-vertical"></i></div>
+            <div>
+                <h1 class="section-title-text">5.4 Electronic Voting System</h1>
+                <p class="section-scrum-badge">SCRUM-27 · SCRUM-28 · SCRUM-29 · SCRUM-30 · SCRUM-31 · SCRUM-32</p>
+            </div>
+        </div>
+
+        <!-- Poll stat cards -->
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+            <div style="flex:1;min-width:140px;background:#0b1523;border:1px solid #a855f744;border-radius:12px;padding:20px;">
+                <p style="color:#475569;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;font-family:monospace;margin:0 0 8px;">Total Polls</p>
+                <p id="pollStatTotal" style="color:#c084fc;font-size:1.6rem;font-weight:700;font-family:monospace;margin:0;">—</p>
+            </div>
+            <div style="flex:1;min-width:140px;background:#0b1523;border:1px solid #22c55e44;border-radius:12px;padding:20px;">
+                <p style="color:#475569;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;font-family:monospace;margin:0 0 8px;">Active Polls</p>
+                <p id="pollStatActive" style="color:#4ade80;font-size:1.6rem;font-weight:700;font-family:monospace;margin:0;">—</p>
+            </div>
+            <div style="flex:1;min-width:140px;background:#0b1523;border:1px solid #3b82f644;border-radius:12px;padding:20px;">
+                <p style="color:#475569;font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;font-family:monospace;margin:0 0 8px;">Total Votes Cast</p>
+                <p id="pollStatVotes" style="color:#7ab8f5;font-size:1.6rem;font-weight:700;font-family:monospace;margin:0;">—</p>
+            </div>
+        </div>
+
+        <div class="members-toolbar" style="flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+            <input type="text" id="pollSearch" class="member-search-input" placeholder="Search polls...">
+            <select id="pollStatusFilter" class="member-search-input" style="max-width:180px;cursor:pointer;">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="scheduled">Scheduled</option>
+                <option value="closed">Closed</option>
+            </select>
+            ${isAdmin ? `
+            <button id="createPollBtn" style="background:#0b1523;border:1px solid #a855f744;border-radius:8px;
+                padding:10px 18px;color:#c084fc;font-family:monospace;font-size:.9rem;cursor:pointer;
+                margin-left:auto;white-space:nowrap;transition:border-color .2s,color .2s,box-shadow .2s;"
+                onmouseover="this.style.borderColor='#a855f7';this.style.boxShadow='0 0 10px #a855f733'"
+                onmouseout="this.style.borderColor='#a855f744';this.style.boxShadow='none'">
+                <i class="fas fa-plus"></i> Create Poll
+            </button>` : ''}
+        </div>
+
+        <div id="pollStatus" class="upload-status" hidden></div>
+
+        <div class="members-table-wrapper">
+            <table class="members-table">
+                <thead>
+                    <tr>
+                        <th>Poll</th>
+                        <th>Status</th>
+                        <th>Access</th>
+                        <th>Opens</th>
+                        <th>Closes</th>
+                        <th>Options</th>
+                        <th>Total Votes</th>
+                        ${isAdmin ? '<th>Actions</th>' : ''}
+                    </tr>
+                </thead>
+                <tbody id="pollsTableBody">
+                    <tr><td colspan="${isAdmin ? 8 : 7}" class="members-loading">Loading polls...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Create Poll Modal (SCRUM-27) -->
+        ${isAdmin ? `
+        <div class="modal-overlay" id="createPollModal" hidden>
+            <div class="modal-card" style="max-width:560px;">
+                <div class="modal-header">
+                    <h3>Create Poll</h3>
+                    <button class="modal-close" onclick="closeModal('createPollModal')">✕</button>
+                </div>
+                <div id="createPollError" class="upload-status error" hidden></div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Poll Title <span style="color:#f87171">*</span></label>
+                        <input type="text" id="pollTitle" class="member-search-input" placeholder="e.g. Best venue for Q3 event" style="max-width:100%">
+                    </div>
+                    <div class="form-group">
+                        <label>Description <span style="color:var(--secondary-text-clr);font-size:.75rem">(optional)</span></label>
+                        <textarea id="pollDescription" class="member-search-input"
+                            placeholder="Provide context for voters..."
+                            style="max-width:100%;min-height:68px;resize:vertical;font-family:monospace;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Answer Options <span style="color:#f87171">*</span> <span style="color:var(--secondary-text-clr);font-size:.75rem">(min. 2)</span></label>
+                        <div id="pollOptionsContainer" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px;"></div>
+                        <button type="button" onclick="addPollOption()" style="
+                            background:transparent;border:1px dashed #334155;border-radius:6px;
+                            padding:8px 14px;color:var(--secondary-text-clr);font-family:monospace;
+                            font-size:.85rem;cursor:pointer;width:100%;transition:border-color .2s,color .2s;"
+                            onmouseover="this.style.borderColor='#3b82f6';this.style.color='#7ab8f5'"
+                            onmouseout="this.style.borderColor='#334155';this.style.color=''">
+                            <i class="fas fa-plus"></i> Add Option
+                        </button>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div class="form-group" style="margin-bottom:0">
+                            <label>Start Date <span style="color:#f87171">*</span></label>
+                            <input type="date" id="pollStartDate" class="member-search-input" style="max-width:100%">
+                        </div>
+                        <div class="form-group" style="margin-bottom:0">
+                            <label>End Date <span style="color:#f87171">*</span></label>
+                            <input type="date" id="pollEndDate" class="member-search-input" style="max-width:100%">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-top:16px;">
+                        <label>Access</label>
+                        <select id="pollAccess" class="member-search-input" style="max-width:100%;cursor:pointer;">
+                            <option value="members">Members &amp; Admins</option>
+                            <option value="admin">Admins Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn outline-btn" onclick="closeModal('createPollModal')">Cancel</button>
+                    <button id="submitPollBtn" class="action-btn" onclick="submitCreatePoll()">
+                        <i class="fas fa-square-poll-vertical"></i> Create Poll
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Poll Modal -->
+        <div class="modal-overlay" id="deletePollModal" hidden>
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3>Delete Poll</h3>
+                    <button class="modal-close" onclick="closeModal('deletePollModal')">✕</button>
+                </div>
+                <div class="modal-body">
+                    <p style="color:var(--text-clr);margin-bottom:8px">Are you sure you want to delete <strong id="deletePollName"></strong>?</p>
+                    <p style="color:var(--secondary-text-clr);font-size:.85rem">All votes and options will be permanently removed.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="action-btn outline-btn" onclick="closeModal('deletePollModal')">Cancel</button>
+                    <button class="danger-btn" id="confirmDeletePollBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Modal (SCRUM-32) -->
+        <div class="modal-overlay" id="pollResultsModal" hidden>
+            <div class="modal-card" style="max-width:520px;">
+                <div class="modal-header">
+                    <h3 id="pollResultsTitle">Poll Results</h3>
+                    <button class="modal-close" onclick="closeModal('pollResultsModal')">✕</button>
+                </div>
+                <div class="modal-body" id="pollResultsBody"></div>
+                <div class="modal-footer">
+                    <button class="action-btn outline-btn" onclick="closeModal('pollResultsModal')">Close</button>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+    `;
+
+    document.getElementById('pollSearch').addEventListener('input', filterPolls);
+    document.getElementById('pollStatusFilter').addEventListener('change', filterPolls);
+
+    if (isAdmin) {
+        document.getElementById('createPollBtn').addEventListener('click', openCreatePollModal);
+    }
+
+    await loadPolls();
+}
+
+function openCreatePollModal() {
+    document.getElementById('createPollError').hidden = true;
+    document.getElementById('pollTitle').value       = '';
+    document.getElementById('pollDescription').value = '';
+    document.getElementById('pollStartDate').value   = new Date().toISOString().split('T')[0];
+    document.getElementById('pollEndDate').value     = '';
+    document.getElementById('pollAccess').value      = 'members';
+    document.getElementById('pollOptionsContainer').innerHTML = '';
+    pollOptCount = 0;
+    addPollOption();
+    addPollOption();
+    openModal('createPollModal');
+}
+
+function addPollOption() {
+    const container = document.getElementById('pollOptionsContainer');
+    if (!container) return;
+    const idx = pollOptCount++;
+    const row = document.createElement('div');
+    row.id = `pollOptRow_${idx}`;
+    row.style.cssText = 'display:flex;gap:8px;align-items:center;';
+    row.innerHTML = `
+        <input type="text" id="pollOpt_${idx}" class="member-search-input"
+            placeholder="Option ${idx + 1}" style="flex:1;max-width:100%;">
+        <button type="button" onclick="removePollOption(${idx})"
+            style="background:transparent;border:1px solid #334155;border-radius:6px;
+                   padding:8px 10px;color:var(--secondary-text-clr);cursor:pointer;
+                   font-size:.8rem;flex-shrink:0;transition:border-color .2s,color .2s;"
+            onmouseover="this.style.borderColor='#dc2626';this.style.color='#f87171'"
+            onmouseout="this.style.borderColor='#334155';this.style.color=''">
+            <i class="fas fa-times"></i>
+        </button>`;
+    container.appendChild(row);
+    updatePollRemoveBtns();
+}
+
+function removePollOption(idx) {
+    const row = document.getElementById(`pollOptRow_${idx}`);
+    if (row) row.remove();
+    updatePollRemoveBtns();
+}
+
+function updatePollRemoveBtns() {
+    const container = document.getElementById('pollOptionsContainer');
+    if (!container) return;
+    const rows = container.querySelectorAll('[id^="pollOptRow_"]');
+    rows.forEach(r => {
+        const btn = r.querySelector('button');
+        if (btn) btn.disabled = rows.length <= 2;
+    });
+}
+
+async function submitCreatePoll() {
+    const errorEl   = document.getElementById('createPollError');
+    const submitBtn = document.getElementById('submitPollBtn');
+    errorEl.hidden  = true;
+
+    const title       = document.getElementById('pollTitle').value.trim();
+    const description = document.getElementById('pollDescription').value.trim();
+    const startDate   = document.getElementById('pollStartDate').value;
+    const endDate     = document.getElementById('pollEndDate').value;
+    const access      = document.getElementById('pollAccess').value;
+
+    const inputs  = document.getElementById('pollOptionsContainer').querySelectorAll('input[type="text"]');
+    const options = Array.from(inputs).map(i => i.value.trim()).filter(v => v);
+
+    if (!title) { errorEl.textContent = 'Poll title is required.'; errorEl.hidden = false; return; }
+    if (options.length < 2) { errorEl.textContent = 'At least two non-empty answer options are required.'; errorEl.hidden = false; return; }
+    if (!startDate || !endDate) { errorEl.textContent = 'Start date and end date are required.'; errorEl.hidden = false; return; }
+    if (new Date(endDate) < new Date(startDate)) { errorEl.textContent = 'End date cannot be before start date.'; errorEl.hidden = false; return; }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+
+    try {
+        const res  = await fetch('/api/polls', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, description, options, start_date: startDate, end_date: endDate, access })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            closeModal('createPollModal');
+            showPollStatus('Poll created successfully.', 'success');
+            await loadPolls();
+        } else {
+            errorEl.textContent = data.message || 'Failed to create poll.';
+            errorEl.hidden = false;
+        }
+    } catch { errorEl.textContent = 'Could not connect to server.'; errorEl.hidden = false; }
+
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fas fa-square-poll-vertical"></i> Create Poll';
+}
+
+async function loadPolls() {
+    const tbody = document.getElementById('pollsTableBody');
+    if (!tbody) return;
+    try {
+        const res  = await fetch('/api/polls');
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        allPolls   = data.polls;
+        renderPollRows(allPolls);
+        updatePollStats(allPolls);
+    } catch {
+        tbody.innerHTML = `<tr><td colspan="8" class="members-loading">Could not load polls.</td></tr>`;
+    }
+}
+
+function updatePollStats(polls) {
+    const totalVotes = polls.reduce((sum, p) => sum + (p.total_votes || 0), 0);
+    const s = document.getElementById('pollStatTotal');
+    const a = document.getElementById('pollStatActive');
+    const v = document.getElementById('pollStatVotes');
+    if (s) s.textContent = polls.length;
+    if (a) a.textContent = polls.filter(p => p.status === 'active').length;
+    if (v) v.textContent = totalVotes;
+}
+
+function renderPollRows(polls) {
+    const user    = getUser();
+    const isAdmin = user?.role === 'admin';
+    const tbody   = document.getElementById('pollsTableBody');
+    if (!tbody) return;
+
+    if (!polls.length) {
+        tbody.innerHTML = `<tr><td colspan="${isAdmin ? 8 : 7}" class="members-loading">No polls found.</td></tr>`;
+        return;
+    }
+
+    const statusPill = s => ({
+        active:    `<span class="role-pill" style="background:#22c55e22;color:#4ade80;border:1px solid #22c55e44;">Active</span>`,
+        scheduled: `<span class="role-pill" style="background:#3b82f622;color:#7ab8f5;border:1px solid #3b82f644;">Scheduled</span>`,
+        closed:    `<span class="role-pill" style="background:#64748b22;color:#94a3b8;border:1px solid #64748b44;">Closed</span>`
+    }[s] || `<span class="role-pill member">${escHtml(s)}</span>`);
+
+    tbody.innerHTML = polls.map(p => `
+        <tr>
+            <td><strong>${escHtml(p.title)}</strong>${p.description ? `<br><span style="color:var(--secondary-text-clr);font-size:.8rem;">${escHtml(p.description.slice(0,60))}${p.description.length>60?'…':''}</span>` : ''}</td>
+            <td>${statusPill(p.status)}</td>
+            <td><span class="role-pill member">${p.access === 'admin' ? 'Admins Only' : 'Members'}</span></td>
+            <td>${p.start_date}</td>
+            <td>${p.end_date}</td>
+            <td>${p.option_count}</td>
+            <td>${p.total_votes}</td>
+            ${isAdmin ? `
+            <td style="display:flex;gap:8px;align-items:center;">
+                <button class="tbl-action-btn" title="View Results" onclick="openPollResults(${p.id})">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
+                <button class="tbl-action-btn delete" title="Delete" onclick="confirmDeletePoll(${p.id}, '${escHtml(p.title)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>` : ''}
+        </tr>
+    `).join('');
+}
+
+function filterPolls() {
+    const q      = document.getElementById('pollSearch').value.toLowerCase();
+    const status = document.getElementById('pollStatusFilter').value;
+    renderPollRows(allPolls.filter(p => {
+        const matchQ = !q || p.title.toLowerCase().includes(q) || (p.description||'').toLowerCase().includes(q);
+        const matchS = !status || p.status === status;
+        return matchQ && matchS;
+    }));
+}
+
+// SCRUM-32: Admin view voting results
+function openPollResults(pollId) {
+    const poll = allPolls.find(p => p.id === pollId);
+    if (!poll) return;
+
+    const options     = poll.options || [];
+    const totalVotes  = poll.total_votes || 0;
+
+    document.getElementById('pollResultsTitle').textContent = poll.title;
+    document.getElementById('pollResultsBody').innerHTML = `
+        <p style="color:var(--secondary-text-clr);font-size:.85rem;margin-bottom:16px;">
+            ${escHtml(poll.description || '')}
+        </p>
+        <p style="color:var(--secondary-text-clr);font-size:.8rem;margin-bottom:16px;">
+            <i class="fas fa-users"></i> ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}
+            &nbsp;·&nbsp; Closes ${poll.end_date}
+            &nbsp;·&nbsp; ${poll.status === 'active' ? '<span style="color:#4ade80">Live</span>' : `<span>${escHtml(poll.status)}</span>`}
+        </p>
+        ${options.map(o => {
+            const votes = o.vote_count || 0;
+            const pct   = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+            return `
+                <div style="margin-bottom:14px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                        <span style="color:var(--text-clr);font-size:.9rem;">${escHtml(o.option_text)}</span>
+                        <span style="color:var(--secondary-text-clr);font-size:.85rem;font-family:monospace;">${votes} (${pct}%)</span>
+                    </div>
+                    <div style="background:#16263b;border-radius:4px;height:8px;overflow:hidden;">
+                        <div style="width:${pct}%;background:#3b82f6;height:100%;border-radius:4px;transition:width .4s;"></div>
+                    </div>
+                </div>`;
+        }).join('')}
+        ${options.length === 0 ? '<p style="color:var(--secondary-text-clr);">No options found.</p>' : ''}
+    `;
+    openModal('pollResultsModal');
+}
+
+function confirmDeletePoll(pollId, pollTitle) {
+    document.getElementById('deletePollName').textContent = pollTitle;
+    document.getElementById('confirmDeletePollBtn').onclick = () => executeDeletePoll(pollId);
+    openModal('deletePollModal');
+}
+
+async function executeDeletePoll(pollId) {
+    closeModal('deletePollModal');
+    try {
+        const res  = await fetch(`/api/polls/${pollId}`, { method: 'DELETE' });
+        const data = await res.json();
+        showPollStatus(data.message || 'Poll deleted.', res.ok ? 'success' : 'error');
+        if (res.ok) await loadPolls();
+    } catch { showPollStatus('Could not connect to server.', 'error'); }
+}
+
+function showPollStatus(message, type) {
+    const el = document.getElementById('pollStatus');
+    if (!el) return;
+    el.className = `upload-status ${type}`;
+    el.innerHTML = `<p>${escHtml(message)}</p>`;
+    el.hidden    = false;
     setTimeout(() => { el.hidden = true; }, 4000);
 }
