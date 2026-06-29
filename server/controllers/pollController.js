@@ -1,5 +1,40 @@
 const pool = require('../database/database');
 
+pool.query(`
+    CREATE TABLE IF NOT EXISTS polls (
+        id          SERIAL PRIMARY KEY,
+        title       VARCHAR(255) NOT NULL,
+        description TEXT,
+        start_date  DATE NOT NULL,
+        end_date    DATE NOT NULL,
+        access      VARCHAR(20)  DEFAULT 'members' CHECK (access IN ('members', 'admin')),
+        status      VARCHAR(20)  DEFAULT 'scheduled' CHECK (status IN ('active', 'scheduled', 'closed')),
+        created_by  INTEGER REFERENCES members(id) ON DELETE SET NULL,
+        created_at  TIMESTAMPTZ  DEFAULT NOW()
+    )
+`).catch(err => console.error('[Polls] polls init error:', err.message));
+
+pool.query(`
+    CREATE TABLE IF NOT EXISTS poll_options (
+        id          SERIAL PRIMARY KEY,
+        poll_id     INTEGER REFERENCES polls(id) ON DELETE CASCADE,
+        option_text VARCHAR(500) NOT NULL,
+        vote_count  INTEGER      DEFAULT 0,
+        position    INTEGER      DEFAULT 0
+    )
+`).catch(err => console.error('[Polls] poll_options init error:', err.message));
+
+pool.query(`
+    CREATE TABLE IF NOT EXISTS votes (
+        id        SERIAL PRIMARY KEY,
+        poll_id   INTEGER REFERENCES polls(id) ON DELETE CASCADE,
+        option_id INTEGER REFERENCES poll_options(id) ON DELETE CASCADE,
+        member_id INTEGER REFERENCES members(id) ON DELETE CASCADE,
+        voted_at  TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE (poll_id, member_id)
+    )
+`).catch(err => console.error('[Polls] votes init error:', err.message));
+
 const createPoll = async (req, res) => {
     const { title, description, start_date, end_date, access, options } = req.body;
 
