@@ -9,6 +9,54 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="../../images/icon.svg">
   <script src="../../js/Memberindex.js" defer></script>
+  <script src="../../js/voting.js" defer></script>
+  <style>
+    .poll-grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); margin-top: 8px; }
+    .poll-card {
+      background: #0b1523; border: 1px solid #16263b; border-radius: 12px;
+      padding: 22px 24px; display: flex; flex-direction: column; gap: 14px;
+      transition: border-color .2s;
+    }
+    .poll-card:hover { border-color: #1e3a5f; }
+    .poll-card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+    .poll-card-title { color: var(--text-clr, #e2e8f0); font-size: 1rem; font-weight: 600; margin: 0; }
+    .poll-card-desc  { color: var(--secondary-text-clr, #64748b); font-size: .85rem; line-height: 1.5; margin: 0; }
+    .poll-meta { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .poll-close-date { color: var(--secondary-text-clr, #64748b); font-size: .78rem; font-family: monospace; }
+    .poll-options { display: flex; flex-direction: column; gap: 10px; }
+    .poll-option-label {
+      display: flex; align-items: center; gap: 10px; cursor: pointer;
+      padding: 10px 14px; border: 1px solid #16263b; border-radius: 8px;
+      color: var(--text-clr, #e2e8f0); font-size: .9rem;
+      transition: border-color .2s, background .2s;
+    }
+    .poll-option-label:hover { border-color: #3b82f6; background: #3b82f610; }
+    .poll-option-label input[type="radio"] { accent-color: #3b82f6; width: 16px; height: 16px; flex-shrink: 0; }
+    .poll-vote-btn {
+      align-self: flex-start; background: #0b1523; border: 1px solid #3b82f644;
+      border-radius: 8px; padding: 10px 20px; color: #7ab8f5; font-family: monospace;
+      font-size: .9rem; cursor: pointer; transition: border-color .2s, color .2s;
+    }
+    .poll-vote-btn:hover { border-color: #3b82f6; color: #bfdbfe; }
+    .poll-vote-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .voted-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #22c55e22; border: 1px solid #22c55e44;
+      border-radius: 6px; padding: 4px 10px;
+      color: #4ade80; font-size: .78rem; font-family: monospace;
+    }
+    .result-bar-wrap { margin-bottom: 12px; }
+    .result-bar-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .result-bar-text  { color: var(--text-clr, #e2e8f0); font-size: .88rem; }
+    .result-bar-pct   { color: var(--secondary-text-clr, #64748b); font-size: .82rem; font-family: monospace; }
+    .result-bar-track { background: #16263b; border-radius: 4px; height: 8px; overflow: hidden; }
+    .result-bar-fill  { height: 100%; border-radius: 4px; background: #3b82f6; transition: width .5s; }
+    .result-bar-fill.my-vote { background: #22c55e; }
+    .poll-msg { padding: 10px 14px; border-radius: 8px; font-size: .87rem; font-family: monospace; }
+    .poll-msg.error   { background: #7f1d1d22; border: 1px solid #ef444444; color: #f87171; }
+    .poll-msg.success { background: #14532d22; border: 1px solid #22c55e44; color: #4ade80; }
+    #pollsLoadingState { color: var(--secondary-text-clr, #64748b); font-size: .9rem; padding: 40px 0; text-align: center; }
+  </style>
 </head>
 <body>
 
@@ -30,8 +78,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" fill="#e8eaed"><path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z"/></svg>
         </button>
         <ul class="sub-menu"><div>
-          <li><a href="DocumentSearch.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>Search</a></li>
-          <li><a href="MyFiles.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>My Files</a></li>
+          <li><a href="DocumentSearch.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>Search</a></li>
+          <li><a href="MyFiles.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>My Files</a></li>
         </div></ul>
       </li>
       <li class="active"><a href="Voting.html"><svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm56 192c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zm184 88c0-13.3 10.7-24 24-24s24 10.7 24 24l0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48zM224 128c13.3 0 24 10.7 24 24l0 208c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-208c0-13.3 10.7-24 24-24z"/></svg><span>E-voting</span></a></li>
@@ -40,66 +88,52 @@
   </nav>
 
   <div class="member-main">
-    <!-- Top Bar -->
-        <header class="topbar">
-            <div class="topbar-left">
-                <h2 class="page-title" id="pageTitle">Dashboard</h2>
-            </div>
-            <div class="topbar-right">
-                <div class="profile-container" id="profileContainer">
-                    <div class="avatar" id="avatarEl">
-                        <span id="avatarInitials">U</span>
-                    </div>
-                    <div class="profile-meta">
-                        <span class="profile-name-text" id="profileName">User</span>
-                        <span class="role-badge" id="roleBadge">Member</span>
-                    </div>
-                    <i class="fas fa-chevron-down chevron-arrow" id="dropdownChevron"></i>
-
-                    <!-- Dropdown -->
-                    <div class="profile-dropdown" id="profileDropdown">
-                        <button class="dropdown-item" id="updateDataBtn">
-                            <i class="fas fa-user-edit"></i>
-                            <span>Update Data</span>
-                        </button>
-                        <div class="dropdown-sep"></div>
-                        <button class="dropdown-item logout-item" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i>
-                            <span>Logout</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </header>
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 class="page-title" id="pageTitle">E-voting</h2>
+      </div>
+      <div class="topbar-right">
+        <div class="profile-container" id="profileContainer">
+          <div class="avatar" id="avatarEl"><span id="avatarInitials">U</span></div>
+          <div class="profile-meta">
+            <span class="profile-name-text" id="profileName">User</span>
+            <span class="role-badge" id="roleBadge">Member</span>
+          </div>
+          <i class="fas fa-chevron-down chevron-arrow" id="dropdownChevron"></i>
+          <div class="profile-dropdown" id="profileDropdown">
+            <button class="dropdown-item" id="updateDataBtn">
+              <i class="fas fa-user-edit"></i><span>Update Data</span>
+            </button>
+            <div class="dropdown-sep"></div>
+            <button class="dropdown-item logout-item" id="logoutBtn">
+              <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
 
     <main class="module-page">
       <div class="module-header">
         <div class="module-icon-box">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm56 192c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zm184 88c0-13.3 10.7-24 24-24s24 10.7 24 24l0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48zM224 128c13.3 0 24 10.7 24 24l0 208c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-208c0-13.3 10.7-24 24-24z"/></svg>
+          <i class="fas fa-square-poll-vertical" style="font-size:1.4rem;"></i>
         </div>
         <div>
           <h1 class="module-page-title">5.4 Electronic Voting System</h1>
-          <p class="module-scrum-badge">SCRUM-8</p>
+          <p class="module-scrum-badge">SCRUM-28 · SCRUM-29 · SCRUM-30 · SCRUM-31</p>
         </div>
       </div>
 
-      <div class="coming-card">
-        <div class="coming-icon-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm56 192c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zm184 88c0-13.3 10.7-24 24-24s24 10.7 24 24l0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48zM224 128c13.3 0 24 10.7 24 24l0 208c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-208c0-13.3 10.7-24 24-24z"/></svg>
-        </div>
-        <h2 class="coming-title">5.4 Electronic Voting System</h2>
-        <p class="coming-desc">A secure and transparent system for conducting organizational elections and referendums online. Full functionality will be built in upcoming sprints.</p>
-        <div class="coming-badge">
-          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 0 512 512"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120l0 136c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.5 33.3-6.5s4.5-25.9-6.5-33.3L280 243.2 280 120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
-          Future functionalities will be added as sprints progress
-        </div>
-        <div class="feature-chips">
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Ballot Creation</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Anonymous Voting</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Real-time Results</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Audit Trail</span>
-        </div>
+      <div id="pollsLoadingState">
+        <i class="fas fa-spinner fa-spin"></i> Loading polls...
       </div>
+
+      <div id="pollsEmptyState" style="display:none; text-align:center; padding:48px 0; color:var(--secondary-text-clr);">
+        <i class="fas fa-square-poll-vertical" style="font-size:2.5rem; margin-bottom:12px; display:block; opacity:.3;"></i>
+        <p>No active polls available at the moment.</p>
+      </div>
+
+      <div id="pollsGrid" class="poll-grid" style="display:none;"></div>
     </main>
   </div>
 
