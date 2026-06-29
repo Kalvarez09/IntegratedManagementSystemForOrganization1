@@ -835,8 +835,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHome(user);
 
     Object.keys(SECTIONS)
-    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'meetings')
-    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'e-voting')
+    .filter(id => id !== 'data-migration' && id !== 'documents' && id !== 'e-voting' && id !== 'meetings')
     .forEach(renderFutureSection);
 
     renderMembersSection();
@@ -1429,6 +1428,21 @@ async function renderEvotingSection() {
                 </div>
             </div>
         </div>
+                <!-- Poll Results Modal -->
+<div class="modal-overlay" id="pollResultsModal" hidden>
+    <div class="modal-card" style="max-width:560px;">
+        <div class="modal-header">
+            <h3 id="pollResultsTitle">Poll Results</h3>
+            <button class="modal-close"
+                onclick="closeModal('pollResultsModal')">✕</button>
+        </div>
+        <div class="modal-body" id="pollResultsBody"></div>
+        <div class="modal-footer">
+            <button class="action-btn outline-btn"
+                onclick="closeModal('pollResultsModal')">Close</button>
+        </div>
+    </div>
+</div>
         ` : ''}
     `;
 
@@ -1506,6 +1520,10 @@ function renderPollRows(polls) {
             <td>${escHtml(p.creator_name || 'Admin')}</td>
             ${isAdmin ? `
             <td>
+                <button class="tbl-action-btn result" title="View results"
+                    onclick="openPollResults(${p.id})">
+                    <i class="fas fa-chart-bar"></i>
+                </button>
                 <button class="tbl-action-btn delete" title="Delete poll"
                     onclick="confirmDeletePoll(${p.id}, '${escHtml(p.title)}')">
                     <i class="fas fa-trash"></i>
@@ -1638,6 +1656,48 @@ async function executeDeletePoll(pollId) {
     } catch {
         showPollStatus('Could not connect to server.', 'error');
     }
+}
+function openPollResults(pollId) {
+    const poll = allPolls.find(p => p.id === pollId);
+    if (!poll) return;
+
+    const options = (poll.options || []).filter(o => o.id);
+    const totalVotes = options.reduce((sum, o) => sum + (o.vote_count || 0), 0);
+
+    document.getElementById('pollResultsTitle').textContent = poll.title;
+
+    const isActive = poll.status === 'active';
+
+    document.getElementById('pollResultsBody').innerHTML = `
+        <p style="color:var(--secondary-text-clr);font-family:monospace;
+            font-size:0.85rem;margin-bottom:20px;">
+            ${isActive
+                ? '<span style="color:#34d399">● Live</span> — results update on refresh'
+                : `Closed · ${new Date(poll.end_date).toLocaleDateString()}`}
+            &nbsp;·&nbsp; ${totalVotes} total vote${totalVotes !== 1 ? 's' : ''}
+        </p>
+        ${options.map(opt => {
+            const votes = opt.vote_count || 0;
+            const pct = totalVotes ? Math.round((votes / totalVotes) * 100) : 0;
+            return `
+            <div style="margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;
+                    margin-bottom:6px;font-family:monospace;font-size:0.88rem;">
+                    <span style="color:var(--text-clr)">${escHtml(opt.option_text)}</span>
+                    <span style="color:var(--secondary-text-clr)">${votes} vote${votes !== 1 ? 's' : ''} · ${pct}%</span>
+                </div>
+                <div style="background:#16263b;border-radius:6px;height:10px;overflow:hidden;">
+                    <div style="height:100%;width:${pct}%;
+                        background:linear-gradient(90deg,#3b82f6,#60a5fa);
+                        border-radius:6px;transition:width 0.4s ease;">
+                    </div>
+                </div>
+            </div>`;
+        }).join('')}
+        ${totalVotes === 0 ? '<p style="color:var(--secondary-text-clr);font-family:monospace;text-align:center;padding:20px 0;">No votes cast yet.</p>' : ''}
+    `;
+
+    openModal('pollResultsModal');
 }
 
 function showPollStatus(message, type) {

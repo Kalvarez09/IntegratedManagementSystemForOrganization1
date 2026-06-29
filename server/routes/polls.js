@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createPoll, getPolls } = require('../controllers/pollController');
+const { createPoll, getPolls, castVote } = require('../controllers/pollController');
 const pool = require('../database/database');
 
 function requireAdmin(req, res, next) {
@@ -16,6 +16,11 @@ function requireAuth(req, res, next) {
     }
     next();
 }
+
+router.get('/', requireAuth, getPolls);
+router.post('/', requireAdmin, createPoll);
+router.post('/:pollId/vote', requireAuth, castVote);
+
 router.delete('/:id', requireAdmin, async (req, res) => {
     try {
         const result = await pool.query(
@@ -30,8 +35,5 @@ router.delete('/:id', requireAdmin, async (req, res) => {
         res.status(500).json({ message: 'Server error.' });
     }
 });
-
-router.get('/', requireAuth, getPolls);
-router.post('/', requireAdmin, createPoll);
 
 module.exports = router;
