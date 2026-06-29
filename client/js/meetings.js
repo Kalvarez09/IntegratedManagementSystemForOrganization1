@@ -6,6 +6,8 @@
 
 const MEETINGS_STORAGE_KEY = 'org_x_meetings';
 let allMeetings = [];
+let meetingsIsAdmin = false;
+const MEETING_ADMIN_ROLES = ['admin', 'president', 'vice_president', 'secretary', 'treasurer', 'technical_lead'];
 
 function getMeetingsData() {
     try { return JSON.parse(localStorage.getItem(MEETINGS_STORAGE_KEY) || '[]'); } catch { return []; }
@@ -35,6 +37,9 @@ function meetingComingSoonCard(icon, title, scrum, desc, features) {
 function renderMeetingsSection() {
     const el = document.getElementById('section-meetings');
     if (!el) return;
+
+    const _u = JSON.parse(localStorage.getItem('user') || '{}');
+    meetingsIsAdmin = MEETING_ADMIN_ROLES.includes(_u.role);
 
     el.innerHTML = `
         <div class="section-hdr">
@@ -90,9 +95,9 @@ function renderMeetingsSection() {
                     <option value="completed">Completed</option>
                     <option value="cancelled">Cancelled</option>
                 </select>
-                <button id="scheduleMeetingBtn" class="mtg-btn-primary">
+                ${meetingsIsAdmin ? `<button id="scheduleMeetingBtn" class="mtg-btn-primary">
                     <i class="fas fa-calendar-plus"></i> Schedule Meeting
-                </button>
+                </button>` : ''}
             </div>
 
             <div id="meetingStatus" class="upload-status" hidden></div>
@@ -232,24 +237,110 @@ function renderMeetingsSection() {
 
         <!-- SCRUM-52: Meeting Notifications -->
         <div class="meetings-tab-panel" id="tab-notifications">
-            ${meetingComingSoonCard(
-                'fas fa-bell',
-                'Meeting Notifications',
-                'SCRUM-52',
-                'Automated system that alerts all members when a meeting is scheduled, rescheduled, or cancelled. Members stay informed without any manual follow-up.',
-                ['Email Alerts', 'Push Notifications', 'Reminder Scheduling', 'Cancellation Notices']
-            )}
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#e6e6ef;font-size:1.1rem;font-family:monospace;font-weight:700;margin:0 0 4px;">
+                    <i class="fas fa-bell" style="color:#60a5fa;margin-right:8px;"></i>Meeting Notifications
+                </h2>
+                <p style="color:#94a3b8;font-size:0.82rem;font-family:monospace;margin:0;">
+                    SCRUM-52 &middot; Email alerts are sent automatically when meetings are scheduled, updated, or cancelled.
+                </p>
+            </div>
+
+            <div style="display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:#10b9811a;border:1px solid #10b98133;border-radius:8px;margin-bottom:24px;font-family:monospace;font-size:0.82rem;color:#34d399;">
+                <i class="fas fa-circle-check"></i> Email notifications active &middot; SMTP configured
+            </div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:24px;">
+                <div style="background:#0b1523;border:1px solid #1d4ed833;border-radius:10px;padding:18px;">
+                    <div style="width:36px;height:36px;background:#1d4ed81a;border:1px solid #1d4ed833;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                        <i class="fas fa-calendar-plus" style="color:#60a5fa;font-size:0.85rem;"></i>
+                    </div>
+                    <div style="font-size:0.85rem;font-weight:600;color:#e6e6ef;font-family:monospace;margin-bottom:6px;">Meeting Scheduled</div>
+                    <div style="font-size:0.77rem;color:#94a3b8;font-family:monospace;line-height:1.5;">Email sent to all active members with the title, date/time, and location.</div>
+                </div>
+                <div style="background:#0b1523;border:1px solid #d9770633;border-radius:10px;padding:18px;">
+                    <div style="width:36px;height:36px;background:#d977061a;border:1px solid #d9770633;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                        <i class="fas fa-calendar-days" style="color:#fcd34d;font-size:0.85rem;"></i>
+                    </div>
+                    <div style="font-size:0.85rem;font-weight:600;color:#e6e6ef;font-family:monospace;margin-bottom:6px;">Meeting Rescheduled</div>
+                    <div style="font-size:0.77rem;color:#94a3b8;font-family:monospace;line-height:1.5;">Follow-up email indicating the change and showing the updated date, time &amp; location.</div>
+                </div>
+                <div style="background:#0b1523;border:1px solid #ef444433;border-radius:10px;padding:18px;">
+                    <div style="width:36px;height:36px;background:#ef44441a;border:1px solid #ef444433;border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+                        <i class="fas fa-ban" style="color:#f87171;font-size:0.85rem;"></i>
+                    </div>
+                    <div style="font-size:0.85rem;font-weight:600;color:#e6e6ef;font-family:monospace;margin-bottom:6px;">Meeting Cancelled</div>
+                    <div style="font-size:0.77rem;color:#94a3b8;font-family:monospace;line-height:1.5;">Cancellation email sent to all members who were originally notified.</div>
+                </div>
+            </div>
+
+            <div style="background:#0b1523;border:1px solid #16263b;border-radius:10px;padding:18px;">
+                <div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #16263b;">Reliability Guarantees</div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                        <i class="fas fa-shield-halved" style="color:#60a5fa;margin-top:2px;font-size:0.8rem;flex-shrink:0;"></i>
+                        <span style="font-size:0.8rem;color:#94a3b8;font-family:monospace;line-height:1.5;">If an email fails for a specific member, the failure is logged and sending continues to remaining members — one bad address does not block the rest.</span>
+                    </div>
+                    <div style="display:flex;align-items:flex-start;gap:10px;">
+                        <i class="fas fa-server" style="color:#a78bfa;margin-top:2px;font-size:0.8rem;flex-shrink:0;"></i>
+                        <span style="font-size:0.8rem;color:#94a3b8;font-family:monospace;line-height:1.5;">If the SMTP server is unavailable, the meeting is still saved successfully and a warning is displayed to the admin.</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- SCRUM-53: Meeting Link -->
         <div class="meetings-tab-panel" id="tab-meeting-link">
-            ${meetingComingSoonCard(
-                'fas fa-link',
-                'Meeting Links',
-                'SCRUM-53',
-                'Attach virtual meeting links to any scheduled meeting. Supports Zoom, Microsoft Teams, Google Meet, and other platforms for seamless remote participation.',
-                ['Zoom Integration', 'Teams Support', 'Google Meet', 'One-Click Join']
-            )}
+            <div style="margin-bottom:20px;">
+                <h2 style="color:#e6e6ef;font-size:1.1rem;font-family:monospace;font-weight:700;margin:0 0 4px;">
+                    <i class="fas fa-link" style="color:#60a5fa;margin-right:8px;"></i>Meeting Links
+                </h2>
+                <p style="color:#94a3b8;font-size:0.82rem;font-family:monospace;margin:0;">
+                    SCRUM-53 &middot; Attach virtual join links to scheduled meetings. Members can join directly from here.
+                </p>
+            </div>
+
+            <div id="meetingLinksContent">
+                <p style="color:#94a3b8;font-family:monospace;padding:20px 0;text-align:center;">Loading...</p>
+            </div>
+
+            <!-- Add / Edit Link Modal -->
+            <div class="modal-overlay" id="meetingLinkModal" hidden>
+                <div class="modal-card" style="max-width:480px;width:90vw;">
+                    <div class="modal-header">
+                        <div>
+                            <h3 id="linkModalTitle">Add Meeting Link</h3>
+                            <p id="linkModalMeetingName" style="font-size:0.78rem;color:#94a3b8;margin:3px 0 0;font-family:monospace;"></p>
+                        </div>
+                        <button class="modal-close" onclick="document.getElementById('meetingLinkModal').hidden=true">&#x2715;</button>
+                    </div>
+                    <div id="linkModalError" class="upload-status error" hidden></div>
+                    <input type="hidden" id="linkModalMeetingId">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Meeting Link / Location</label>
+                            <input type="text" id="linkModalUrl" class="member-search-input" style="max-width:100%;"
+                                placeholder="https://zoom.us/j/... or Conference Room A">
+                        </div>
+                        <p style="color:#64748b;font-size:0.75rem;font-family:monospace;margin:8px 0 0;line-height:1.5;">
+                            Paste a Zoom, Microsoft Teams, or Google Meet URL for virtual meetings, or enter a room name for in-person.
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button onclick="document.getElementById('meetingLinkModal').hidden=true" style="
+                            background:#0b1523;border:1px solid #16263b;border-radius:8px;
+                            padding:10px 16px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+                            Cancel
+                        </button>
+                        <button onclick="saveMeetingLink()" style="
+                            background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:1px solid #3b82f666;
+                            border-radius:8px;padding:10px 20px;color:#fff;font-family:monospace;
+                            font-size:0.9rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;">
+                            <i class="fas fa-link"></i> Save Link
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- SCRUM-54: Meeting Minutes (fully implemented) -->
@@ -389,6 +480,7 @@ function renderMeetingsSection() {
             if (tab.dataset.tab === 'minutes') refreshMinutesTab();
             if (tab.dataset.tab === 'past-meetings') renderPastMeetingsTab();
             if (tab.dataset.tab === 'archives') renderArchivesTab();
+            if (tab.dataset.tab === 'meeting-link') renderMeetingLinksTab();
         });
     });
 
@@ -416,14 +508,20 @@ function renderMeetingsSection() {
         if (e.target === this) this.hidden = true;
     });
 
-    document.getElementById('scheduleMeetingBtn').addEventListener('click', () => openScheduleMeetingModal());
+    if (meetingsIsAdmin) {
+        document.getElementById('scheduleMeetingBtn').addEventListener('click', () => openScheduleMeetingModal());
+    }
     document.getElementById('meetingSearch').addEventListener('input', filterMeetings);
     document.getElementById('meetingStatusFilter').addEventListener('change', filterMeetings);
+    document.getElementById('meetingLinkModal').addEventListener('click', function(e) {
+        if (e.target === this) this.hidden = true;
+    });
 
     autoArchiveMeetings();
     allMeetings = getMeetingsData();
-    renderMeetingRows(allMeetings);
+    filterMeetings();
     refreshMinutesTab();
+    loadMeetingsFromApi();
 }
 
 function openScheduleMeetingModal(meetingId = null) {
@@ -431,7 +529,7 @@ function openScheduleMeetingModal(meetingId = null) {
     errorEl.hidden = true;
 
     if (meetingId) {
-        const m = allMeetings.find(x => x.id === meetingId);
+        const m = allMeetings.find(x => String(x.id) === String(meetingId));
         if (!m) return;
         document.getElementById('meetingModalTitle').textContent = 'Reschedule Meeting';
         document.getElementById('meetingSubmitLabel').textContent = 'Save Changes';
@@ -456,6 +554,8 @@ function openScheduleMeetingModal(meetingId = null) {
         document.getElementById('meetingAgenda').value = '';
     }
 
+    const _sb = document.getElementById('meetingSubmitBtn');
+    if (_sb) _sb.dataset.pastWarned = '';
     document.getElementById('scheduleMeetingModal').hidden = false;
 }
 
@@ -463,47 +563,156 @@ function closeMeetingModal() {
     document.getElementById('scheduleMeetingModal').hidden = true;
 }
 
-function submitMeeting() {
-    const title    = document.getElementById('meetingTitle').value.trim();
-    const date     = document.getElementById('meetingDate').value;
-    const time     = document.getElementById('meetingTime').value;
-    const duration = document.getElementById('meetingDuration').value;
-    const type     = document.getElementById('meetingType').value;
-    const location = document.getElementById('meetingLocation').value.trim();
-    const agenda   = document.getElementById('meetingAgenda').value.trim();
-    const editId   = document.getElementById('editMeetingId').value;
-    const errorEl  = document.getElementById('meetingModalError');
+async function submitMeeting() {
+    const title     = document.getElementById('meetingTitle').value.trim();
+    const date      = document.getElementById('meetingDate').value;
+    const time      = document.getElementById('meetingTime').value;
+    const duration  = document.getElementById('meetingDuration').value;
+    const type      = document.getElementById('meetingType').value;
+    const location  = document.getElementById('meetingLocation').value.trim();
+    const agenda    = document.getElementById('meetingAgenda').value.trim();
+    const editId    = document.getElementById('editMeetingId').value;
+    const errorEl   = document.getElementById('meetingModalError');
+    const submitBtn = document.getElementById('meetingSubmitBtn');
+    const labelEl   = document.getElementById('meetingSubmitLabel');
 
     errorEl.hidden = true;
+    errorEl.className = 'upload-status error';
 
     if (!title) { errorEl.textContent = 'Meeting title is required.'; errorEl.hidden = false; return; }
     if (!date)  { errorEl.textContent = 'Date is required.';          errorEl.hidden = false; return; }
     if (!time)  { errorEl.textContent = 'Time is required.';          errorEl.hidden = false; return; }
 
-    const meetings = getMeetingsData();
+    // Warn on past date — require a second click to proceed
+    if (new Date(`${date}T${time}`) < new Date() && submitBtn.dataset.pastWarned !== 'true') {
+        submitBtn.dataset.pastWarned = 'true';
+        errorEl.className = 'upload-status info';
+        errorEl.textContent = 'Warning: this date is in the past. Click again to save as a historical record.';
+        errorEl.hidden = false;
+        return;
+    }
 
-    if (editId) {
-        const idx = meetings.findIndex(m => m.id === editId);
-        if (idx !== -1) {
-            meetings[idx] = { ...meetings[idx], title, date, time, duration, type, location, agenda };
+    const meetingData = { title, date, time, duration, type, location, agenda };
+
+    submitBtn.disabled = true;
+    const origLabel = labelEl.textContent;
+    labelEl.textContent = 'Saving...';
+
+    try {
+        if (editId) {
+            // Reschedule: update DB if DB-backed, always update localStorage
+            const dbId = Number(editId);
+            if (!isNaN(dbId) && dbId > 0) {
+                const resp = await fetch(`/api/meetings/${dbId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(meetingData)
+                });
+                if (!resp.ok) {
+                    const d = await resp.json().catch(() => ({}));
+                    errorEl.className = 'upload-status error';
+                    errorEl.textContent = d.message || 'Failed to update meeting.';
+                    errorEl.hidden = false;
+                    return;
+                }
+            }
+            const meetings = getMeetingsData();
+            const idx = meetings.findIndex(m => String(m.id) === String(editId));
+            if (idx !== -1) meetings[idx] = { ...meetings[idx], ...meetingData };
+            saveMeetingsData(meetings);
+            allMeetings = meetings;
+            closeMeetingModal();
+            filterMeetings();
+            sendMeetingNotification('update', meetingData);
+        } else {
+            // Create: POST to DB
+            const resp = await fetch('/api/meetings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(meetingData)
+            });
+            const d = await resp.json();
+            if (!resp.ok) {
+                errorEl.className = 'upload-status error';
+                errorEl.textContent = d.message || 'Failed to create meeting.';
+                errorEl.hidden = false;
+                return;
+            }
+            const m = d.meeting;
+            const newMeeting = {
+                id: m.id,
+                title: m.title,
+                date: m.date,
+                time: m.time,
+                duration: m.duration || '1 hr',
+                type: m.type || 'in-person',
+                location: m.location || '',
+                agenda: m.agenda || '',
+                status: 'scheduled',
+                minutes: '',
+                created_at: m.created_at
+            };
+            const meetings = getMeetingsData();
+            meetings.push(newMeeting);
+            saveMeetingsData(meetings);
+            allMeetings = meetings;
+            closeMeetingModal();
+            filterMeetings();
+            sendMeetingNotification('create', meetingData);
         }
-        saveMeetingsData(meetings);
-        allMeetings = meetings;
-        closeMeetingModal();
-        filterMeetings();
-        showMeetingStatus('Meeting rescheduled successfully.', 'success');
-    } else {
-        meetings.push({
-            id: 'mtg_' + Date.now(),
-            title, date, time, duration, type, location, agenda,
-            status: 'scheduled',
-            created_at: new Date().toISOString()
+    } catch (err) {
+        console.error('[Meetings] submitMeeting error:', err);
+        errorEl.className = 'upload-status error';
+        errorEl.textContent = 'Network error. Please try again.';
+        errorEl.hidden = false;
+    } finally {
+        submitBtn.disabled = false;
+        labelEl.textContent = origLabel;
+    }
+}
+
+async function sendMeetingNotification(action, meeting) {
+    const label = action === 'create' ? 'scheduled' : 'rescheduled';
+    showMeetingStatus(`Meeting ${label}. Sending email notifications...`, 'success', 8000);
+    try {
+        const resp = await fetch(`/api/meetings/notify/${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(meeting)
         });
-        saveMeetingsData(meetings);
-        allMeetings = meetings;
-        closeMeetingModal();
-        filterMeetings();
-        showMeetingStatus('Meeting scheduled successfully.', 'success');
+        const data = await resp.json();
+        if (resp.status === 503 || data.smtpUnavailable) {
+            showMeetingStatus(`Meeting ${label} successfully. Warning: email notifications could not be sent — SMTP server unavailable.`, 'info', 8000);
+        } else if (data.success) {
+            const failNote = data.failed > 0 ? ` (${data.failed} failed — check server logs)` : '';
+            showMeetingStatus(`Meeting ${label} successfully. Notifications sent to ${data.sent} member${data.sent !== 1 ? 's' : ''}${failNote}.`, 'success', 8000);
+        } else {
+            showMeetingStatus(`Meeting ${label} successfully. Could not send notifications.`, 'info', 8000);
+        }
+    } catch {
+        showMeetingStatus(`Meeting ${label} successfully. Notifications not sent — server unreachable.`, 'info', 8000);
+    }
+}
+
+async function sendCancelNotification(meeting) {
+    showMeetingStatus('Meeting cancelled. Sending cancellation notifications...', 'info', 8000);
+    try {
+        const resp = await fetch('/api/meetings/notify/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: meeting.title, date: meeting.date, time: meeting.time, location: meeting.location })
+        });
+        const data = await resp.json();
+        if (resp.status === 503 || data.smtpUnavailable) {
+            showMeetingStatus('Meeting cancelled. Warning: notifications could not be sent — SMTP server unavailable.', 'info', 8000);
+        } else if (data.success) {
+            const failNote = data.failed > 0 ? ` (${data.failed} failed — check server logs)` : '';
+            showMeetingStatus(`Meeting cancelled. Notifications sent to ${data.sent} member${data.sent !== 1 ? 's' : ''}${failNote}.`, 'info', 8000);
+        } else {
+            showMeetingStatus('Meeting cancelled. Could not send notifications.', 'info', 8000);
+        }
+    } catch {
+        showMeetingStatus('Meeting cancelled. Notifications not sent — server unreachable.', 'info', 8000);
     }
 }
 
@@ -565,7 +774,7 @@ function renderMeetingRows(meetings) {
             <td style="color:#94a3b8;font-family:monospace;font-size:0.82rem;white-space:nowrap;">${escHtml(m.duration)}</td>
             <td><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;${statusStyle[m.status] || ''}"><i class="${statusIcon[m.status] || 'fas fa-circle'}" style="font-size:9px;"></i>${m.status}</span></td>
             <td>
-                ${m.status === 'scheduled' ? `
+                ${m.status === 'scheduled' && meetingsIsAdmin ? `
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
                     <button class="mtg-act-btn reschedule-btn" onclick="openScheduleMeetingModal('${m.id}')">
                         <i class="fas fa-calendar-days"></i> Reschedule
@@ -579,6 +788,8 @@ function renderMeetingRows(meetings) {
                 </div>`
                 : m.status === 'completed'
                 ? `<span style="color:#34d399;font-size:0.75rem;font-family:monospace;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-circle-check"></i> Completed</span>`
+                : m.status === 'scheduled'
+                ? `<span style="color:#94a3b8;font-size:0.75rem;font-family:monospace;">—</span>`
                 : `<span style="color:#475569;font-size:0.75rem;font-family:monospace;display:inline-flex;align-items:center;gap:5px;"><i class="fas fa-ban"></i> Cancelled</span>`}
             </td>
         </tr>`;
@@ -588,11 +799,14 @@ function renderMeetingRows(meetings) {
 function filterMeetings() {
     const query  = (document.getElementById('meetingSearch')?.value || '').toLowerCase();
     const status = document.getElementById('meetingStatusFilter')?.value || '';
-    renderMeetingRows(allMeetings.filter(m =>
-        m.status !== 'archived' &&
-        (!query  || m.title.toLowerCase().includes(query) || (m.location || '').toLowerCase().includes(query)) &&
-        (!status || m.status === status)
-    ));
+    const rows = allMeetings
+        .filter(m =>
+            m.status !== 'archived' &&
+            (!query  || m.title.toLowerCase().includes(query) || (m.location || '').toLowerCase().includes(query)) &&
+            (!status || m.status === status)
+        )
+        .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+    renderMeetingRows(rows);
 }
 
 function confirmCancelMeeting(id, name) {
@@ -604,35 +818,269 @@ function confirmCancelMeeting(id, name) {
 function executeCancelMeeting(id) {
     document.getElementById('cancelMeetingModal').hidden = true;
     const meetings = getMeetingsData();
-    const idx = meetings.findIndex(m => m.id === id);
+    const idx = meetings.findIndex(m => String(m.id) === String(id));
     if (idx !== -1) {
+        const meeting = meetings[idx];
         meetings[idx].status = 'cancelled';
         saveMeetingsData(meetings);
         allMeetings = meetings;
         filterMeetings();
-        showMeetingStatus('Meeting has been cancelled.', 'info');
+        const dbId = Number(id);
+        if (!isNaN(dbId) && dbId > 0) {
+            fetch(`/api/meetings/${dbId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'cancelled' })
+            }).catch(err => console.error('[Meetings] DB cancel sync failed:', err));
+        }
+        sendCancelNotification(meeting);
     }
 }
 
 function executeCompleteMeeting(id) {
     const meetings = getMeetingsData();
-    const idx = meetings.findIndex(m => m.id === id);
+    const idx = meetings.findIndex(m => String(m.id) === String(id));
     if (idx !== -1) {
         meetings[idx].status = 'completed';
         saveMeetingsData(meetings);
         allMeetings = meetings;
         filterMeetings();
         showMeetingStatus('Meeting marked as completed.', 'success');
+        const dbId = Number(id);
+        if (!isNaN(dbId) && dbId > 0) {
+            fetch(`/api/meetings/${dbId}/status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'completed' })
+            }).catch(err => console.error('[Meetings] DB complete sync failed:', err));
+        }
     }
 }
 
-function showMeetingStatus(message, type) {
+function showMeetingStatus(message, type, duration = 4000) {
     const el = document.getElementById('meetingStatus');
     if (!el) return;
     el.className = `upload-status ${type}`;
     el.innerHTML = `<p>${escHtml(message)}</p>`;
     el.hidden = false;
-    setTimeout(() => { if (el) el.hidden = true; }, 4000);
+    setTimeout(() => { if (el) el.hidden = true; }, duration);
+}
+
+// ── SCRUM-53: Meeting Links ───────────────────────────────────
+
+function detectPlatform(url) {
+    if (!url) return null;
+    const u = url.toLowerCase();
+    if (u.includes('zoom.us'))
+        return { name: 'Zoom',        color: '#2D8CFF', bg: '#2D8CFF1a', border: '#2D8CFF33' };
+    if (u.includes('teams.microsoft.com') || u.includes('teams.live.com'))
+        return { name: 'Teams',       color: '#6264A7', bg: '#6264A71a', border: '#6264A733' };
+    if (u.includes('meet.google.com'))
+        return { name: 'Google Meet', color: '#00BFA5', bg: '#00BFA51a', border: '#00BFA533' };
+    if (u.startsWith('http://') || u.startsWith('https://'))
+        return { name: 'Virtual',     color: '#67e8f9', bg: '#0891b21a', border: '#0891b233' };
+    return null;
+}
+
+function buildMeetingLinkCard(m) {
+    const d = new Date(`${m.date}T${m.time}`);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    const isVirtualLink = m.location && (m.location.startsWith('http://') || m.location.startsWith('https://'));
+    const platform = detectPlatform(m.location);
+
+    const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+    };
+    const typeLabels = { 'in-person': 'In-Person', virtual: 'Virtual', hybrid: 'Hybrid' };
+
+    const platformBadge = platform
+        ? `<span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;background:${platform.bg};color:${platform.color};border:1px solid ${platform.border};">
+               <i class="fas fa-video" style="font-size:9px;"></i>${platform.name}
+           </span>`
+        : `<span style="display:inline-flex;align-items:center;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>`;
+
+    const joinBtn = isVirtualLink
+        ? `<a href="${escHtml(m.location)}" target="_blank" rel="noopener" style="
+               display:inline-flex;align-items:center;gap:7px;padding:8px 16px;
+               background:linear-gradient(135deg,#1d4ed8,#3b82f6);border:1px solid #3b82f666;
+               border-radius:8px;color:#fff;font-family:monospace;font-size:0.82rem;
+               font-weight:600;text-decoration:none;">
+               <i class="fas fa-arrow-up-right-from-square" style="font-size:0.75rem;"></i>Join
+           </a>`
+        : '';
+
+    const adminBtn = meetingsIsAdmin
+        ? `<button onclick="openLinkModal('${m.id}')"
+               style="display:inline-flex;align-items:center;gap:6px;padding:7px 13px;
+                      background:#0b1523;border:1px solid #16263b;border-radius:8px;
+                      color:#94a3b8;font-family:monospace;font-size:0.8rem;cursor:pointer;"
+               onmouseover="this.style.borderColor='#3b82f655';this.style.color='#e6e6ef';"
+               onmouseout="this.style.borderColor='#16263b';this.style.color='#94a3b8';">
+               <i class="fas fa-${isVirtualLink ? 'pen' : 'plus'}"></i>${isVirtualLink ? 'Edit Link' : 'Add Link'}
+           </button>`
+        : '';
+
+    return `<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;
+                padding:14px 18px;margin-bottom:8px;background:#0b1523;border:1px solid #16263b;
+                border-radius:10px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:14px;min-width:0;flex:1;">
+            <div style="width:38px;height:38px;border-radius:50%;background:#1e293b;border:1px solid #3b3f82;
+                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-${isVirtualLink ? 'video' : 'calendar'}" style="color:#60a5fa;font-size:0.7rem;"></i>
+            </div>
+            <div style="min-width:0;">
+                <span style="display:block;font-weight:600;color:#e6e6ef;font-family:monospace;
+                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${escHtml(m.title)}</span>
+                <span style="font-size:0.75rem;color:#64748b;font-family:monospace;">${dateStr} &bull; ${timeStr}</span>
+                ${m.location && !isVirtualLink
+                    ? `<span style="display:block;font-size:0.72rem;color:#475569;font-family:monospace;margin-top:2px;">${escHtml(m.location)}</span>`
+                    : isVirtualLink
+                    ? `<span style="display:block;font-size:0.72rem;color:#475569;font-family:monospace;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${escHtml(m.location)}</span>`
+                    : ''}
+            </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+            ${platformBadge}
+            ${joinBtn}
+            ${adminBtn}
+        </div>
+    </div>`;
+}
+
+function renderMeetingLinksTab() {
+    const container = document.getElementById('meetingLinksContent');
+    if (!container) return;
+
+    const now = new Date();
+    const meetings = getMeetingsData()
+        .filter(m => m.status !== 'archived' && m.status !== 'cancelled')
+        .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+    const upcoming = meetings.filter(m => new Date(`${m.date}T${m.time}`) >= now);
+    const past     = meetings.filter(m => new Date(`${m.date}T${m.time}`) < now);
+
+    // Members only see meetings that have a virtual link
+    const visibleUpcoming = meetingsIsAdmin
+        ? upcoming
+        : upcoming.filter(m => m.location && (m.location.startsWith('http://') || m.location.startsWith('https://')));
+
+    let html = '';
+
+    if (!meetingsIsAdmin && !visibleUpcoming.length) {
+        container.innerHTML = `<div style="padding:24px 20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;">
+            No virtual meeting links available yet. Check back when meetings are scheduled.
+        </div>`;
+        return;
+    }
+
+    if (!meetings.length) {
+        container.innerHTML = `<div style="padding:24px 20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;">
+            No meetings scheduled yet. Create meetings in the Schedule tab first.
+        </div>`;
+        return;
+    }
+
+    if (visibleUpcoming.length) {
+        html += `<div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Upcoming Meetings</div>`;
+        html += visibleUpcoming.map(m => buildMeetingLinkCard(m)).join('');
+    } else {
+        html += `<div style="padding:20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;margin-bottom:12px;">
+            No upcoming meetings. Use the Schedule tab to add one.
+        </div>`;
+    }
+
+    if (meetingsIsAdmin && past.length) {
+        html += `<div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin:20px 0 10px;">Past Meetings</div>`;
+        html += past.map(m => buildMeetingLinkCard(m)).join('');
+    }
+
+    container.innerHTML = html;
+}
+
+function openLinkModal(meetingId) {
+    const m = getMeetingsData().find(x => String(x.id) === String(meetingId));
+    if (!m) return;
+    document.getElementById('linkModalTitle').textContent = m.location ? 'Edit Meeting Link' : 'Add Meeting Link';
+    document.getElementById('linkModalMeetingName').textContent = m.title;
+    document.getElementById('linkModalMeetingId').value = meetingId;
+    document.getElementById('linkModalUrl').value = m.location || '';
+    document.getElementById('linkModalError').hidden = true;
+    document.getElementById('meetingLinkModal').hidden = false;
+}
+
+async function saveMeetingLink() {
+    const meetingId = document.getElementById('linkModalMeetingId').value;
+    const url       = document.getElementById('linkModalUrl').value.trim();
+    const errorEl   = document.getElementById('linkModalError');
+    errorEl.hidden  = true;
+
+    const dbId = Number(meetingId);
+    if (!isNaN(dbId) && dbId > 0) {
+        try {
+            const resp = await fetch(`/api/meetings/${dbId}/link`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location: url })
+            });
+            if (!resp.ok) {
+                const d = await resp.json().catch(() => ({}));
+                errorEl.textContent = d.message || 'Failed to save link.';
+                errorEl.hidden = false;
+                return;
+            }
+        } catch {
+            errorEl.textContent = 'Network error. Please try again.';
+            errorEl.hidden = false;
+            return;
+        }
+    }
+
+    const meetings = getMeetingsData();
+    const idx = meetings.findIndex(m => String(m.id) === String(meetingId));
+    if (idx !== -1) {
+        meetings[idx].location = url;
+        saveMeetingsData(meetings);
+        allMeetings = meetings;
+    }
+
+    document.getElementById('meetingLinkModal').hidden = true;
+    renderMeetingLinksTab();
+    showMeetingStatus('Meeting link saved successfully.', 'success');
+}
+
+async function loadMeetingsFromApi() {
+    try {
+        const resp = await fetch('/api/meetings');
+        if (!resp.ok) return;
+        const data = await resp.json();
+        if (!Array.isArray(data.meetings)) return;
+        const existing = getMeetingsData();
+        allMeetings = data.meetings.map(m => {
+            const local = existing.find(e => String(e.id) === String(m.id));
+            return {
+                id: m.id,
+                title: m.title,
+                date: m.date,
+                time: m.time,
+                duration: m.duration || '1 hr',
+                type: m.type || 'in-person',
+                location: m.location || '',
+                agenda: m.agenda || '',
+                status: m.status || 'scheduled',
+                minutes: local?.minutes || m.minutes || '',
+                created_at: m.created_at
+            };
+        });
+        saveMeetingsData(allMeetings);
+        autoArchiveMeetings();
+        filterMeetings();
+        refreshMinutesTab();
+    } catch (err) {
+        console.error('[Meetings] API load failed, using localStorage:', err);
+    }
 }
 
 // ── SCRUM-54: Meeting Minutes ──────────────────────────────
@@ -688,7 +1136,7 @@ function refreshMinutesTab() {
 }
 
 function openMinutesModal(meetingId) {
-    const m = getMeetingsData().find(x => x.id === meetingId);
+    const m = getMeetingsData().find(x => String(x.id) === String(meetingId));
     if (!m) return;
     const d = new Date(`${m.date}T${m.time}`);
     const dateStr = d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -789,7 +1237,7 @@ function renderPastMeetingsTab() {
 }
 
 function openAdminPastMeetingModal(id) {
-    const m = getMeetingsData().find(x => x.id === id);
+    const m = getMeetingsData().find(x => String(x.id) === String(id));
     if (!m) return;
     _currentApmId = id;
 
@@ -946,7 +1394,7 @@ function renderArchivesTab() {
 }
 
 function openAdminArchiveModal(id) {
-    const m = getMeetingsData().find(x => x.id === id);
+    const m = getMeetingsData().find(x => String(x.id) === String(id));
     if (!m) return;
     _currentApmId = id;
 

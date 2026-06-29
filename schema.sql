@@ -23,3 +23,21 @@ CREATE TABLE IF NOT EXISTS documents (
 
 CREATE INDEX IF NOT EXISTS idx_documents_category ON documents(category);
 CREATE INDEX IF NOT EXISTS idx_documents_access   ON documents(access);
+
+CREATE TABLE IF NOT EXISTS meetings (
+    id          SERIAL PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL,
+    date        DATE NOT NULL,
+    time        TIME NOT NULL,
+    duration    VARCHAR(20)  DEFAULT '1 hr',
+    type        VARCHAR(20)  DEFAULT 'in-person',
+    location    VARCHAR(500),
+    agenda      TEXT,
+    status      VARCHAR(20)  DEFAULT 'scheduled',
+    minutes     TEXT,
+    created_at  TIMESTAMPTZ  DEFAULT NOW(),
+    created_by  INTEGER REFERENCES members(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_meetings_date   ON meetings(date);
+CREATE INDEX IF NOT EXISTS idx_meetings_status ON meetings(status);
