@@ -259,6 +259,7 @@ html, body {
     cursor: pointer;
     user-select: none;
     transition: background var(--ease);
+    
 }
 
 .profile-container:hover {
@@ -304,6 +305,7 @@ html, body {
     letter-spacing: 0.6px;
     line-height: 1.5;
     align-self: flex-start;
+    
 }
 
 .role-badge.admin {
@@ -317,6 +319,33 @@ html, body {
     color: #34d399;
     border: 1px solid #10b98147;
 }
+.role-badge.president {
+    background: #7c3aed24;
+    color: #a78bfa;
+    border: 1px solid #7c3aed47;
+}
+.role-badge.vice_president {
+    background: #6d28d924;
+    color: #c4b5fd;
+    border: 1px solid #6d28d947;
+}
+.role-badge.secretary {
+    background: #0891b224;
+    color: #67e8f9;
+    border: 1px solid #0891b247;
+    
+}
+.role-badge.treasurer {
+    background: #d9770624;
+    color: #fcd34d;
+    border: 1px solid #d9770647;
+}
+.role-badge.technical_lead {
+    background: #05966924;
+    color: #6ee7b7;
+    border: 1px solid #05966947;
+}
+
 
 .chevron-arrow {
     font-size: 11px;
@@ -743,6 +772,31 @@ html, body {
       color: #34d399;
    border: 1px solid #10b98147;
 }
+.role-pill.president {
+    background: #7c3aed24;
+    color: #a78bfa;
+    border: 1px solid #7c3aed47;
+}
+.role-pill.vice_president {
+    background: #6d28d924;
+    color: #c4b5fd;
+    border: 1px solid #6d28d947;
+}
+.role-pill.secretary {
+    background: #0891b224;
+    color: #67e8f9;
+    border: 1px solid #0891b247;
+}
+.role-pill.treasurer {
+    background: #d9770624;
+    color: #fcd34d;
+    border: 1px solid #d9770647;
+}
+.role-pill.technical_lead {
+    background: #05966924;
+    color: #6ee7b7;
+    border: 1px solid #05966947;
+}
 
 .members-loading {
     text-align: center;
@@ -803,7 +857,7 @@ html, body {
 .upload-status li { 
     margin-bottom: 2px; 
 }
-#addMemberBtn{
+#addMemberBtn,#uploadDocBtn{
     max-width: 400px;
     background: #0b1523;
     border: 1px solid #16263b;
@@ -813,12 +867,12 @@ html, body {
     font-family: monospace;
     font-size: 0.9rem;
 }
-#addMemberBtn:hover{
+#addMemberBtn:hover,#uploadDocBtn:hover{
     background:linear-gradient(175deg, #0f3460, #2e844c);
     color: white;
     cursor: pointer;
 }
-/* ── Modals ─────────────────────────────────────────── */
+/* ////////////////Modals ////////////////////////////////////// */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -970,4 +1024,28 @@ html, body {
     background:linear-gradient(175deg, #0f3460, #2e844c);
     color: white;
     cursor: pointer;
+}
+/*///////////////////PICKING NEW ROLES///////////////////*/
+.clickable-role {
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.clickable-role:hover {
+    opacity: 0.75;
+}
+
+.role-inline-select {
+    background: #0b1523;
+    border: 1px solid #4a9eff;
+    border-radius: 6px;
+    color: var(--text-clr);
+    font-family: monospace;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    outline: none;
+}
+.role-inline-select option {
+    background: #101C2E;
+    color: var(--text-clr);
 }

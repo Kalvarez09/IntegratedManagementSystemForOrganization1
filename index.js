@@ -3,9 +3,12 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
-const documentRoutes = require('./server/routes/documents')
 
 const authRoutes = require('./server/routes/auth');
+const documentRoutes = require('./server/routes/documents');
+
+const financialRoutes = require('./server/routes/financial');
+const meetingRoutes   = require('./server/routes/meetings');
 
 const app = express();
 
@@ -23,11 +26,13 @@ app.use(session({
 app.use(express.static(path.join(__dirname, 'client')));
 
 app.use('/api/auth', authRoutes);
-
 app.use('/api/documents', documentRoutes);
 
+app.use('/api/financial', financialRoutes);
+app.use('/api/meetings', meetingRoutes);
+
 app.get('/', (req, res) => {
-    res.redirect('/pages/MainPage/Login.html');
+    res.redirect('/pages/Login.html');
 });
 
 const PORT = process.env.PORT || 3000;

@@ -82,15 +82,22 @@ document.addEventListener('DOMContentLoaded', () => {
   if (profileEmailEl) profileEmailEl.textContent = escHtml(user.email);
 
   const roleBadgeEl = document.getElementById('roleBadge');
+
+  const roleLabels = {
+    admin:          'Admin',
+    president:      'President',
+    vice_president: 'Vice President',
+    secretary:      'Secretary',
+    treasurer:      'Treasurer',
+    technical_lead: 'Technical Lead',
+};
   if (roleBadgeEl) {
-    if (user.role === 'admin') {
-      roleBadgeEl.textContent = 'Admin';
-      roleBadgeEl.classList.add('admin');
-    } else {
-      roleBadgeEl.textContent = 'Member';
-      roleBadgeEl.classList.add('member');
-    }
-  }
+    const label = roleLabels[user.role] || 'Member';
+    const cssClass = user.role in roleLabels ? user.role : 'member';
+    roleBadgeEl.textContent = label;
+    roleBadgeEl.classList.add(cssClass);
+}
+
 
   const profileContainer = document.getElementById('profileContainer');
   if (profileContainer) {
@@ -102,6 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
       profileContainer.classList.remove('open');
     });
   }
+  const profileRoleBadge = document.getElementById('profileRoleBadge');
+
+  if (profileRoleBadge) {
+    const label = roleLabels[user.role] || 'Member';
+    const cssClass = user.role in roleLabels ? user.role : 'member';
+    profileRoleBadge.textContent = label;
+    profileRoleBadge.classList.add(cssClass);
+}
 
   const updateDataBtn = document.getElementById('updateDataBtn');
   if (updateDataBtn) {

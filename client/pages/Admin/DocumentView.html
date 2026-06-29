@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Document — Organization X</title>
+    <link rel="stylesheet" href="../../css/dashboard.css">
+    <link rel="stylesheet" href="../../css/documents.css">
+    <link rel="icon" type="image/svg" href="../../images/icon.svg">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="brand">
+                <div class="brand-mark">X</div>
+                <span class="brand-text">Organization X</span>
+            </div>
+            <button class="collapse-btn" id="collapseBtn" title="Toggle sidebar">
+                <i class="fas fa-chevron-left" id="collapseIcon"></i>
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul class="nav-list">
+                <li class="nav-item" title="Dashboard">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-home nav-icon"></i>
+                        <span class="nav-label">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.2 Data Preprocessing">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-database nav-icon"></i>
+                        <span class="nav-label">Data Preprocessing</span>
+                    </a>
+                </li>
+                <li class="nav-item active" title="5.3 Document Management">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-folder-open nav-icon"></i>
+                        <span class="nav-label">Document Management</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.4 Electronic Voting">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-square-poll-vertical nav-icon"></i>
+                        <span class="nav-label">Electronic Voting</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.51 WhatsApp Analytics">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fab fa-whatsapp nav-icon"></i>
+                        <span class="nav-label">WhatsApp Analytics</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.5.2 Smart Notifications">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-bell nav-icon"></i>
+                        <span class="nav-label">Smart Notifications</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.6 Meeting Management">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-users nav-icon"></i>
+                        <span class="nav-label">Meeting Management</span>
+                    </a>
+                </li>
+                <li class="nav-item" title="5.7 Financial Records">
+                    <a class="nav-link" href="Dashboard.html">
+                        <i class="fas fa-chart-line nav-icon"></i>
+                        <span class="nav-label">Financial Records</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- ========== MAIN WRAPPER ========== -->
+    <div class="main-wrapper" id="mainWrapper">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <h2 class="page-title">View Document</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="profile-container" id="profileContainer">
+                    <div class="avatar" id="avatarEl">
+                        <span id="avatarInitials">U</span>
+                    </div>
+                    <div class="profile-meta">
+                        <span class="profile-name-text" id="profileName">User</span>
+                        <span class="role-badge" id="roleBadge">Admin</span>
+                    </div>
+                    <i class="fas fa-chevron-down chevron-arrow"></i>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <button class="dropdown-item" id="updateDataBtn">
+                            <i class="fas fa-user-edit"></i>
+                            <span>Update Data</span>
+                        </button>
+                        <div class="dropdown-sep"></div>
+                        <button class="dropdown-item logout-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Logout</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <main class="content-area">
+            <section class="section" style="display:block; padding:32px;">
+
+                <!-- Loading -->
+                <div id="loadingState" class="doc-loading-state">
+                    <i class="fas fa-spinner fa-spin" style="font-size:1.5rem; color:#475569; margin-bottom:12px; display:block;"></i>
+                    Loading document...
+                </div>
+
+                <!-- Error -->
+                <div id="errorState" class="doc-view-error-wrap" style="display:none">
+                    <i id="errorIcon" class="fas fa-exclamation-triangle"></i>
+                    <p id="errorMsg">An error occurred.</p>
+                    <button onclick="history.back()" class="doc-back-btn" style="margin-bottom:0; margin-top:8px;">
+                        <i class="fas fa-arrow-left"></i> Go Back
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div id="contentState" style="display:none">
+                    <button onclick="history.back()" class="doc-back-btn">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+
+                    <!-- Details header -->
+                    <div class="doc-detail-header">
+                        <div class="doc-detail-icon">
+                            <i id="docDetailIcon" class="fas fa-file"></i>
+                        </div>
+                        <div class="doc-detail-info">
+                            <h2 id="docDetailTitle"></h2>
+                            <span class="cat-pill" id="docDetailCategory"></span>
+                            <div class="doc-detail-meta">
+                                <span><i class="fas fa-user"></i> <span id="docDetailUploader"></span></span>
+                                <span><i class="fas fa-calendar-alt"></i> <span id="docDetailDate"></span></span>
+                                <span><i class="fas fa-file-alt"></i> <span id="docDetailType"></span></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF inline preview -->
+                    <div id="pdfPreviewSection" class="doc-preview-wrap" style="display:none">
+                        <iframe id="pdfFrame" title="Document Preview"></iframe>
+                    </div>
+
+                    <!-- Non-PDF / file-missing card -->
+                    <div id="noPreviewSection" class="doc-no-preview-card" style="display:none">
+                        <i id="noPreviewFileIcon" class="fas fa-file fa-3x"></i>
+                        <p id="noPreviewMsg">Preview is not available for this file type.</p>
+                        <button id="noPreviewDownloadBtn" class="dl-btn doc-download-large" style="display:none">
+                            <i class="fas fa-download"></i> Download File
+                        </button>
+                    </div>
+                </div>
+
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const FILE_ICONS = { pdf:'fa-file-pdf', docx:'fa-file-word', doc:'fa-file-word', xlsx:'fa-file-excel', xls:'fa-file-excel', png:'fa-file-image', jpg:'fa-file-image', jpeg:'fa-file-image' };
+        const FILE_TYPES = { pdf:'PDF Document', docx:'Word Document', doc:'Word Document', xlsx:'Excel Spreadsheet', xls:'Excel Spreadsheet', png:'PNG Image', jpg:'JPEG Image', jpeg:'JPEG Image' };
+        const ROLE_LABELS = { admin:'Admin', president:'President', vice_president:'Vice President', secretary:'Secretary', treasurer:'Treasurer', technical_lead:'Technical Lead', member:'Member' };
+
+        function getUser() {
+            try { return JSON.parse(localStorage.getItem('user')); } catch { return null; }
+        }
+        function getInitials(name) {
+            return (name||'').trim().split(/\s+/).map(p => p[0]).slice(0,2).join('').toUpperCase() || 'U';
+        }
+        function escHtml(str) {
+            return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+        function showError(msg, icon = 'fa-exclamation-triangle') {
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorIcon').className = `fas ${icon}`;
+            document.getElementById('errorMsg').textContent = msg;
+            document.getElementById('errorState').style.display = 'flex';
+        }
+        async function triggerDownload(id, filename) {
+            try {
+                const res = await fetch(`/api/documents/download/${id}`);
+                if (!res.ok) return;
+                const blob = await res.blob();
+                const url  = URL.createObjectURL(blob);
+                const a    = document.createElement('a');
+                a.href = url; a.download = filename; a.click();
+                URL.revokeObjectURL(url);
+            } catch {}
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Auth check
+            const user = getUser();
+            if (!user) { window.location.href = '../MainPage/Login.html'; return; }
+
+            // Profile bar
+            document.getElementById('avatarInitials').textContent = getInitials(user.full_name);
+            document.getElementById('profileName').textContent = user.full_name;
+            const badge = document.getElementById('roleBadge');
+            badge.textContent = ROLE_LABELS[user.role] || 'Admin';
+            badge.classList.add(user.role in ROLE_LABELS ? user.role : 'admin');
+
+            // Profile dropdown
+            const container = document.getElementById('profileContainer');
+            container.addEventListener('click', e => { e.stopPropagation(); container.classList.toggle('open'); });
+            document.addEventListener('click', () => container.classList.remove('open'));
+            document.getElementById('updateDataBtn').addEventListener('click', e => {
+                e.stopPropagation();
+                window.location.href = '../Member/UpdateProfile.html';
+            });
+            document.getElementById('logoutBtn').addEventListener('click', e => {
+                e.stopPropagation();
+                localStorage.removeItem('user');
+                window.location.href = '../MainPage/Login.html';
+            });
+
+            // Sidebar collapse
+            const sidebar = document.getElementById('sidebar');
+            const wrapper = document.getElementById('mainWrapper');
+            document.getElementById('collapseBtn').addEventListener('click', () => {
+                sidebar.classList.toggle('collapsed');
+                wrapper.classList.toggle('sidebar-collapsed');
+            });
+
+            // Load document
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) { showError('No document ID specified.'); return; }
+
+            let res;
+            try { res = await fetch(`/api/documents/${id}`); }
+            catch { showError('Could not connect to server.'); return; }
+
+            if (res.status === 401) { window.location.href = '../MainPage/Login.html'; return; }
+            if (res.status === 403) { showError('You do not have permission to view this document.', 'fa-lock'); return; }
+
+            const data = await res.json();
+            if (!res.ok) { showError(data.error || 'Document not found.'); return; }
+
+            const doc = data.document;
+            const ext = (doc.filename || '').split('.').pop()?.toLowerCase();
+            const iconCls = 'fas ' + (FILE_ICONS[ext] || 'fa-file');
+
+            document.title = `${escHtml(doc.title || doc.filename)} — Organization X`;
+            document.getElementById('docDetailIcon').className = iconCls;
+            document.getElementById('docDetailTitle').textContent = doc.title || doc.filename;
+            document.getElementById('docDetailCategory').textContent = doc.category || 'Uncategorized';
+            document.getElementById('docDetailUploader').textContent = doc.uploader_name || 'Admin';
+            document.getElementById('docDetailDate').textContent = new Date(doc.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+            document.getElementById('docDetailType').textContent = FILE_TYPES[ext] || 'File';
+
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('contentState').style.display = 'block';
+
+            if (!doc.file_exists) {
+                const noPreview = document.getElementById('noPreviewSection');
+                noPreview.style.display = 'flex';
+                document.getElementById('noPreviewFileIcon').className = iconCls + ' fa-3x';
+                document.getElementById('noPreviewMsg').textContent = 'This file has been removed from the server and is no longer available.';
+                return;
+            }
+
+            if (ext === 'pdf') {
+                document.getElementById('pdfPreviewSection').style.display = 'block';
+                document.getElementById('pdfFrame').src = `/api/documents/preview/${doc.id}`;
+            } else {
+                const noPreview = document.getElementById('noPreviewSection');
+                noPreview.style.display = 'flex';
+                document.getElementById('noPreviewFileIcon').className = iconCls + ' fa-3x';
+                const dlBtn = document.getElementById('noPreviewDownloadBtn');
+                dlBtn.style.display = 'inline-flex';
+                dlBtn.onclick = () => triggerDownload(doc.id, doc.filename);
+            }
+        });
+    </script>
+</body>
+</html>

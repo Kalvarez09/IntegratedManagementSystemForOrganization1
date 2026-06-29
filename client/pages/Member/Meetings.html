@@ -4,11 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meetings — Organization X</title>
-  <link rel="stylesheet" href="MemberStyle.css">
+  <link rel="stylesheet" href="../../css/MemberStyle.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/meetings.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="../../images/icon.svg">
-  <script src="Memberindex.js" defer></script>
+  <script src="../../js/Memberindex.js" defer></script>
 </head>
 <body>
 
@@ -30,8 +31,8 @@
           <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" fill="#e8eaed"><path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z"/></svg>
         </button>
         <ul class="sub-menu"><div>
-          <li><a href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path fill="rgb(255,255,255)" d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>Search</a></li>
-          <li><a href="#"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path fill="rgb(255,255,255)" d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>My Files</a></li>
+          <li><a href="DocumentSearch.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>Search</a></li>
+          <li><a href="MyFiles.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path  d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>My Files</a></li>
         </div></ul>
       </li>
       <li><a href="Voting.html"><svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm56 192c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zm184 88c0-13.3 10.7-24 24-24s24 10.7 24 24l0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48zM224 128c13.3 0 24 10.7 24 24l0 208c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-208c0-13.3 10.7-24 24-24z"/></svg><span>E-voting</span></a></li>
@@ -75,32 +76,319 @@
     <main class="module-page">
       <div class="module-header">
         <div class="module-icon-box">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm96 312c0 25-12.7 47-32 59.9l0 92.1c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-92.1C172.7 359 160 337 160 312l0-40c0-53 43-96 96-96s96 43 96 96l0 40zM96 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112zm16 240l0 32c0 32.5 12.1 62.1 32 84.7l0 75.3c0 1.2 0 2.5 .1 3.7-8.5 7.6-19.7 12.3-32.1 12.3l-32 0c-26.5 0-48-21.5-48-48l0-56.6C12.9 364.4 0 343.7 0 320l0-32c0-53 43-96 96-96 12.7 0 24.8 2.5 35.9 6.9-12.6 21.4-19.9 46.4-19.9 73.1zM368 464l0-75.3c19.9-22.5 32-52.2 32-84.7l0-32c0-26.7-7.3-51.6-19.9-73.1 11.1-4.5 23.2-6.9 35.9-6.9 53 0 96 43 96 96l0 32c0 23.7-12.9 44.4-32 55.4l0 56.6c0 26.5-21.5 48-48 48l-32 0c-12.3 0-23.6-4.6-32.1-12.3 0-1.2 .1-2.5 .1-3.7zM416 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg>
+          <i class="fas fa-users" style="color:#4a9eff;font-size:1.4rem;"></i>
         </div>
         <div>
-          <h1 class="module-page-title">5.6 Meeting Management System</h1>
-          <p class="module-scrum-badge">SCRUM-10</p>
+          <h1 class="module-page-title">Meetings</h1>
+          <p class="module-scrum-badge">Scheduled by your organization's admin</p>
         </div>
       </div>
 
-      <div class="coming-card">
-        <div class="coming-icon-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm96 312c0 25-12.7 47-32 59.9l0 92.1c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-92.1C172.7 359 160 337 160 312l0-40c0-53 43-96 96-96s96 43 96 96l0 40zM96 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112zm16 240l0 32c0 32.5 12.1 62.1 32 84.7l0 75.3c0 1.2 0 2.5 .1 3.7-8.5 7.6-19.7 12.3-32.1 12.3l-32 0c-26.5 0-48-21.5-48-48l0-56.6C12.9 364.4 0 343.7 0 320l0-32c0-53 43-96 96-96 12.7 0 24.8 2.5 35.9 6.9-12.6 21.4-19.9 46.4-19.9 73.1zM368 464l0-75.3c19.9-22.5 32-52.2 32-84.7l0-32c0-26.7-7.3-51.6-19.9-73.1 11.1-4.5 23.2-6.9 35.9-6.9 53 0 96 43 96 96l0 32c0 23.7-12.9 44.4-32 55.4l0 56.6c0 26.5-21.5 48-48 48l-32 0c-12.3 0-23.6-4.6-32.1-12.3 0-1.2 .1-2.5 .1-3.7zM416 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg>
+      <div class="members-toolbar" style="margin-bottom:20px;">
+        <input type="text" id="memberMeetingSearch" class="member-search-input"
+          placeholder="Search by title or location...">
+        <select id="memberMeetingFilter" class="member-search-input"
+          style="max-width:180px; cursor:pointer;">
+          <option value="">All Statuses</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="members-table-wrapper" style="overflow-x:auto;">
+        <table class="members-table" style="min-width:700px;">
+          <thead>
+            <tr>
+              <th style="min-width:200px;">Meeting Title</th>
+              <th style="min-width:130px;">Date / Time</th>
+              <th style="min-width:150px;">Location</th>
+              <th style="min-width:100px;">Type</th>
+              <th style="min-width:80px;">Duration</th>
+              <th style="min-width:110px;">Status</th>
+              <th style="min-width:120px;">Minutes</th>
+            </tr>
+          </thead>
+          <tbody id="memberMeetingsBody">
+            <tr><td colspan="7" class="members-loading">Loading meetings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Past Meetings Section ───────────────────────────── -->
+      <div style="margin-top:40px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <div class="module-icon-box" style="width:38px;height:38px;">
+            <i class="fas fa-history" style="color:#a78bfa;font-size:1rem;"></i>
+          </div>
+          <div>
+            <h2 style="font-size:1.05rem;font-weight:700;color:#e6e6ef;margin:0;">Past Meetings</h2>
+            <p style="font-size:0.76rem;color:#64748b;margin:2px 0 0;font-family:monospace;">Meetings whose date has already passed — click to view details &amp; minutes</p>
+          </div>
         </div>
-        <h2 class="coming-title">5.6 Meeting Management System</h2>
-        <p class="coming-desc">Schedule, manage, and track organizational meetings with attendance and minutes recording. Full functionality will be built in upcoming sprints.</p>
-        <div class="coming-badge">
-          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 0 512 512"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120l0 136c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.5 33.3-6.5s4.5-25.9-6.5-33.3L280 243.2 280 120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
-          Future functionalities will be added as sprints progress
+        <div id="pastMeetingsList"></div>
+      </div>
+
+      <!-- ── Past Meeting Detail Modal ──────────────────────── -->
+      <div class="modal-overlay" id="pastMeetingModal" hidden>
+        <div class="modal-card" style="max-width:660px;width:92vw;">
+          <div class="modal-header">
+            <div style="flex:1;min-width:0;">
+              <h3 id="pmTitle" style="margin:0;word-break:break-word;"></h3>
+              <p id="pmBadges" style="margin:6px 0 0;display:flex;gap:6px;flex-wrap:wrap;"></p>
+            </div>
+            <button class="modal-close" id="closePastMeetingModal">✕</button>
+          </div>
+          <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
+            <div id="pmDetails" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+            <div>
+              <div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #16263b;">Meeting Minutes</div>
+              <div id="pmMinutes"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="closePastMeetingBtn" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 20px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">Close</button>
+          </div>
         </div>
-        <div class="feature-chips">
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Meeting Scheduling</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Attendance Tracking</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Agenda Management</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Minutes Recording</span>
+      </div>
+
+      <!-- Read-only Minutes Modal -->
+      <div class="modal-overlay" id="memberMinutesModal" hidden>
+        <div class="modal-card" style="max-width:620px;width:90vw;">
+          <div class="modal-header">
+            <div>
+              <h3 id="memberMinutesTitle">Meeting Minutes</h3>
+              <p id="memberMinutesMeta" style="font-size:0.78rem;color:#94a3b8;margin:3px 0 0;font-family:monospace;"></p>
+            </div>
+            <button class="modal-close" onclick="document.getElementById('memberMinutesModal').hidden=true">✕</button>
+          </div>
+          <div class="modal-body">
+            <textarea id="memberMinutesText" rows="12" readonly style="
+              width:100%; background:#0b1523; border:1px solid #16263b;
+              border-radius:8px; padding:12px 16px; color:#e6e6ef;
+              font-family:monospace; font-size:0.85rem; resize:vertical;
+              outline:none; box-sizing:border-box; line-height:1.6;
+              cursor:default;
+            "></textarea>
+          </div>
+          <div class="modal-footer">
+            <button onclick="document.getElementById('memberMinutesModal').hidden=true" style="
+              background:#0b1523;border:1px solid #16263b;border-radius:8px;
+              padding:10px 20px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </main>
+
+    <script>
+    (function () {
+      const STORAGE_KEY = 'org_x_meetings';
+
+      function openMinutesModal(id) {
+        const m = allMeetings.find(mtg => String(mtg.id) === String(id));
+        if (!m) return;
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+        document.getElementById('memberMinutesTitle').textContent = m.title;
+        document.getElementById('memberMinutesMeta').textContent = `${dateStr} at ${timeStr}`;
+        document.getElementById('memberMinutesText').value = m.minutes || '';
+        document.getElementById('memberMinutesModal').hidden = false;
+      }
+
+      function esc(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      const typeLabels = { 'in-person':'In-Person', virtual:'Virtual', hybrid:'Hybrid' };
+      const typeStyle  = {
+        'in-person': 'background:#7c3aed1a;color:#a78bfa;border:1px solid #7c3aed33;',
+        virtual:     'background:#0891b21a;color:#67e8f9;border:1px solid #0891b233;',
+        hybrid:      'background:#d977061a;color:#fcd34d;border:1px solid #d9770633;'
+      };
+      const statusStyle = {
+        scheduled: 'background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;',
+        completed: 'background:#10b9811a;color:#34d399;border:1px solid #10b98133;',
+        cancelled: 'background:#ef44441a;color:#f87171;border:1px solid #ef444433;'
+      };
+      const statusIcon = {
+        scheduled: 'fas fa-calendar-check',
+        completed: 'fas fa-circle-check',
+        cancelled: 'fas fa-ban'
+      };
+
+      function renderRows(meetings) {
+        const tbody = document.getElementById('memberMeetingsBody');
+        if (!tbody) return;
+        if (!meetings || meetings.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="members-loading">No meetings have been scheduled yet.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = meetings.map(m => {
+          const d = new Date(`${m.date}T${m.time}`);
+          const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+          const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+          const hasMinutes = !!(m.minutes && m.minutes.trim());
+          const safeTitle = esc(m.title);
+          const safeMeta = `${dateStr} at ${timeStr}`;
+          const minutesCell = hasMinutes
+            ? `<button class="view-minutes-btn" data-meeting-id="${m.id}" style="display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:6px;font-family:monospace;font-size:0.75rem;font-weight:600;cursor:pointer;background:#3b82f61a;color:#60a5fa;border:1px solid #3b82f633;white-space:nowrap;"><i class="fas fa-file-lines"></i> View</button>`
+            : '<span style="color:#475569;font-size:0.8rem;font-family:monospace;">—</span>';
+          return `<tr>
+            <td>
+              <div class="member-cell">
+                <div class="member-avatar-sm" style="background:#0d2045;border-color:#3b3f82;color:#a78bfa;">
+                  <i class="fas fa-users" style="font-size:0.6rem;"></i>
+                </div>
+                <div>
+                  <span style="display:block;font-weight:600;color:#e6e6ef;">${esc(m.title)}</span>
+                  ${m.agenda ? `<span style="font-size:0.75rem;color:#94a3b8;display:block;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(m.agenda)}</span>` : ''}
+                </div>
+              </div>
+            </td>
+            <td>
+              <span style="display:block;color:#e6e6ef;">${dateStr}</span>
+              <span style="font-size:0.8rem;color:#94a3b8;">${timeStr}</span>
+            </td>
+            <td style="max-width:200px;">
+              <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${m.location?'#e6e6ef':'#475569'};" title="${m.location?esc(m.location):''}">
+                ${m.location ? esc(m.location) : '—'}
+              </div>
+            </td>
+            <td><span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span></td>
+            <td style="color:#94a3b8;font-family:monospace;font-size:0.82rem;white-space:nowrap;">${esc(m.duration)}</td>
+            <td><span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:12px;font-size:0.72rem;font-family:monospace;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;${statusStyle[m.status]||''}"><i class="${statusIcon[m.status]||'fas fa-circle'}" style="font-size:9px;"></i>${m.status}</span></td>
+            <td>${minutesCell}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      let allMeetings = [];
+
+      function applyFilter() {
+        const query  = (document.getElementById('memberMeetingSearch').value || '').toLowerCase();
+        const status = document.getElementById('memberMeetingFilter').value || '';
+        renderRows(allMeetings.filter(m =>
+          (!query  || m.title.toLowerCase().includes(query) || (m.location||'').toLowerCase().includes(query)) &&
+          (!status || m.status === status)
+        ));
+      }
+
+      // ── Past Meetings ────────────────────────────────────────
+      function renderPastMeetings() {
+        const now = new Date();
+        const past = allMeetings
+          .filter(m => new Date(`${m.date}T${m.time}`) < now && m.status !== 'archived')
+          .sort((a, b) => new Date(`${b.date}T${b.time}`) - new Date(`${a.date}T${a.time}`));
+
+        const container = document.getElementById('pastMeetingsList');
+        if (!past.length) {
+          container.innerHTML = `<div style="padding:24px 20px;text-align:center;color:#475569;font-family:monospace;font-size:0.85rem;background:#0b1523;border:1px solid #16263b;border-radius:10px;">No past meetings yet.</div>`;
+          return;
+        }
+        container.innerHTML = past.map(m => {
+          const d = new Date(`${m.date}T${m.time}`);
+          const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+          const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+          const hasMinutes = !!(m.minutes && m.minutes.trim());
+          return `<div class="past-meeting-card" data-past-id="${m.id}"
+            style="display:flex;align-items:center;justify-content:space-between;gap:16px;
+            padding:14px 18px;margin-bottom:8px;background:#0b1523;border:1px solid #16263b;
+            border-radius:10px;cursor:pointer;transition:border-color .15s,background .15s;"
+            onmouseover="this.style.borderColor='#3b82f655';this.style.background='#101c2e';"
+            onmouseout="this.style.borderColor='#16263b';this.style.background='#0b1523';">
+            <div style="display:flex;align-items:center;gap:14px;min-width:0;">
+              <div style="width:36px;height:36px;border-radius:50%;background:#1e293b;border:1px solid #3b3f82;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas fa-users" style="color:#a78bfa;font-size:0.65rem;"></i>
+              </div>
+              <div style="min-width:0;">
+                <span style="display:block;font-weight:600;color:#e6e6ef;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;">${esc(m.title)}</span>
+                <span style="font-size:0.76rem;color:#64748b;font-family:monospace;">${dateStr} &bull; ${timeStr}</span>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+              <span style="display:inline-flex;align-items:center;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+              ${hasMinutes
+                ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-family:monospace;color:#34d399;"><i class="fas fa-circle-check" style="font-size:9px;"></i> Minutes</span>`
+                : `<span style="font-size:0.7rem;font-family:monospace;color:#475569;">No minutes</span>`}
+              <i class="fas fa-chevron-right" style="color:#334155;font-size:0.7rem;"></i>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+      function openPastMeetingModal(id) {
+        const m = allMeetings.find(mtg => String(mtg.id) === String(id));
+        if (!m) return;
+        const d = new Date(`${m.date}T${m.time}`);
+        const dateStr = d.toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+        const timeStr = d.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+
+        document.getElementById('pmTitle').textContent = m.title;
+
+        const badgesEl = document.getElementById('pmBadges');
+        badgesEl.innerHTML = `
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${typeStyle[m.type]||''}">${typeLabels[m.type]||m.type}</span>
+          <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 9px;border-radius:10px;font-size:0.7rem;font-family:monospace;${statusStyle[m.status]||''}"><i class="${statusIcon[m.status]||'fas fa-circle'}" style="font-size:9px;"></i>${m.status}</span>`;
+
+        const isLink = m.location && (m.location.startsWith('http://') || m.location.startsWith('https://'));
+        const locationVal = m.location
+          ? (isLink ? `<a href="${esc(m.location)}" target="_blank" rel="noopener" style="color:#60a5fa;text-decoration:none;word-break:break-all;">${esc(m.location)}</a>` : `<span style="color:#e6e6ef;">${esc(m.location)}</span>`)
+          : `<span style="color:#475569;">—</span>`;
+
+        const detailItem = (icon, label, val) =>
+          `<div style="background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;">
+            <div style="font-size:0.68rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;"><i class="fas ${icon}" style="margin-right:5px;"></i>${label}</div>
+            <div style="font-size:0.85rem;">${val}</div>
+          </div>`;
+
+        document.getElementById('pmDetails').innerHTML =
+          detailItem('fa-calendar', 'Date', `<span style="color:#e6e6ef;">${dateStr}</span>`) +
+          detailItem('fa-clock', 'Time', `<span style="color:#e6e6ef;">${timeStr} &bull; ${esc(m.duration||'')}</span>`) +
+          detailItem('fa-location-dot', 'Location', locationVal) +
+          (m.agenda ? detailItem('fa-list', 'Agenda', `<span style="color:#94a3b8;font-size:0.8rem;">${esc(m.agenda)}</span>`) : '');
+
+        const pmMinutes = document.getElementById('pmMinutes');
+        if (m.minutes && m.minutes.trim()) {
+          pmMinutes.innerHTML = `<textarea rows="8" readonly style="width:100%;background:#060e1a;border:1px solid #16263b;border-radius:8px;padding:12px 14px;color:#e6e6ef;font-family:monospace;font-size:0.83rem;resize:vertical;outline:none;box-sizing:border-box;line-height:1.6;cursor:default;">${esc(m.minutes)}</textarea>`;
+        } else {
+          pmMinutes.innerHTML = `<div style="padding:16px;background:#060e1a;border:1px solid #16263b;border-radius:8px;color:#475569;font-family:monospace;font-size:0.83rem;font-style:italic;">Minutes not yet available.</div>`;
+        }
+
+        document.getElementById('pastMeetingModal').hidden = false;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        try { allMeetings = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { allMeetings = []; }
+        renderRows(allMeetings);
+        renderPastMeetings();
+        document.getElementById('memberMeetingSearch').addEventListener('input', applyFilter);
+        document.getElementById('memberMeetingFilter').addEventListener('change', applyFilter);
+
+        document.getElementById('memberMeetingsBody').addEventListener('click', function(e) {
+          const btn = e.target.closest('.view-minutes-btn');
+          if (btn) openMinutesModal(btn.dataset.meetingId);
+        });
+
+        document.getElementById('pastMeetingsList').addEventListener('click', function(e) {
+          const card = e.target.closest('.past-meeting-card');
+          if (card) openPastMeetingModal(card.dataset.pastId);
+        });
+
+        document.getElementById('closePastMeetingModal').addEventListener('click', () => {
+          document.getElementById('pastMeetingModal').hidden = true;
+        });
+        document.getElementById('closePastMeetingBtn').addEventListener('click', () => {
+          document.getElementById('pastMeetingModal').hidden = true;
+        });
+        document.getElementById('pastMeetingModal').addEventListener('click', function(e) {
+          if (e.target === this) this.hidden = true;
+        });
+      });
+    })();
+    </script>
   </div>
 
 </body>

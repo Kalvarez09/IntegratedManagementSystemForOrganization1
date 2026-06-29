@@ -1,0 +1,134 @@
+/* =============================================
+   5.6 MEETING MANAGEMENT — SCRUM-51 to SCRUM-56
+   ============================================= */
+
+.meetings-tabs {
+    display: flex;
+    gap: 2px;
+    background: #080f1a;
+    border: 1px solid #16263b;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+}
+
+.meetings-tab {
+    flex: 1;
+    min-width: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 10px 8px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: monospace;
+    text-align: center;
+}
+
+.meetings-tab i { font-size: 1rem; }
+
+.meetings-tab span {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.meetings-tab small {
+    font-size: 0.62rem;
+    color: #475569;
+    letter-spacing: 0.03em;
+}
+
+.meetings-tab.active {
+    background: #3b82f614;
+    border-color: #3b82f633;
+    color: #60a5fa;
+}
+
+.meetings-tab.active small { color: #3b82f680; }
+
+.meetings-tab:hover:not(.active) {
+    background: #ffffff08;
+    color: #f1f5f9;
+}
+
+.meetings-tab-panel { display: none; }
+.meetings-tab-panel.active { display: block; }
+
+/* Schedule Meeting primary button */
+.mtg-btn-primary {
+    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
+    border: 1px solid #3b82f655;
+    border-radius: 8px;
+    padding: 10px 20px;
+    color: #fff;
+    font-family: monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: box-shadow 0.2s, opacity 0.2s;
+    white-space: nowrap;
+}
+
+.mtg-btn-primary:hover {
+    box-shadow: 0 0 18px #3b82f633;
+    opacity: 0.9;
+}
+
+/* Row action buttons */
+.mtg-act-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 11px;
+    border-radius: 6px;
+    font-family: monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.mtg-act-btn.reschedule-btn {
+    background: #1d4ed814;
+    color: #60a5fa;
+    border-color: #3b82f633;
+}
+
+.mtg-act-btn.reschedule-btn:hover {
+    background: #1d4ed830;
+    border-color: #3b82f666;
+}
+
+.mtg-act-btn.complete-btn {
+    background: #10b9811a;
+    color: #34d399;
+    border-color: #10b98133;
+}
+
+.mtg-act-btn.complete-btn:hover {
+    background: #10b98130;
+    border-color: #10b98166;
+}
+
+.mtg-act-btn.cancel-btn {
+    background: #dc262614;
+    color: #f87171;
+    border-color: #dc262633;
+}
+
+.mtg-act-btn.cancel-btn:hover {
+    background: #dc262628;
+    border-color: #dc262655;
+}

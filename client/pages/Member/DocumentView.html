@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>View Document — Organization X</title>
+  <link rel="stylesheet" href="../../css/MemberStyle.css">
+  <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/documents.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="../../images/icon.svg">
+</head>
+<body>
+
+  <nav id="sidebar">
+    <ul>
+      <li>
+        <span class="logo">Organization X</span>
+        <button onclick="toggleSidebar()" id="toggle-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" fill="#e8eaed">
+            <path d="m313-480 155 156q11 11 11.5 27.5T468-268q-11 11-28 11t-28-11L228-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T468-692q11 11 11 28t-11 28L313-480Zm264 0 155 156q11 11 11.5 27.5T732-268q-11 11-28 11t-28-11L492-452q-6-6-8.5-13t-2.5-15q0-8 2.5-15t8.5-13l184-184q11-11 27.5-11.5T732-692q11 11 11 28t-11 28L577-480Z"/>
+          </svg>
+        </button>
+      </li>
+      <li><a href="Dashboard.html">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 512 512"><path d="M277.8 8.6c-12.3-11.4-31.3-11.4-43.5 0l-224 208c-9.6 9-12.8 22.9-8 35.1S18.8 272 32 272l16 0 0 176c0 35.3 28.7 64 64 64l288 0c35.3 0 64-28.7 64-64l0-176 16 0c13.2 0 25-8.1 29.8-20.3s1.6-26.2-8-35.1l-224-208zM240 320l32 0c26.5 0 48 21.5 48 48l0 96-128 0 0-96c0-26.5 21.5-48 48-48z"/></svg>
+        <span>Dashboard</span>
+      </a></li>
+      <li><a href="Profile.html">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 448 512"><path d="M224 248a120 120 0 1 0 0-240 120 120 0 1 0 0 240zm-29.7 56C95.8 304 16 383.8 16 482.3 16 498.7 29.3 512 45.7 512l356.6 0c16.4 0 29.7-13.3 29.7-29.7 0-98.5-79.8-178.3-178.3-178.3l-59.4 0z"/></svg>
+        <span>My Profile</span>
+      </a></li>
+      <li><a href="Meetings.html">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 512 512"><path d="M256 0a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm96 312c0 25-12.7 47-32 59.9l0 92.1c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-92.1C172.7 359 160 337 160 312l0-40c0-53 43-96 96-96s96 43 96 96l0 40z"/></svg>
+        <span>Meetings</span>
+      </a></li>
+      <li>
+        <button onclick="toggleSubMenu(this)" class="dropdown-btn rotate">
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 576 512"><path d="M56 225.6L32.4 296.2 32.4 96c0-35.3 28.7-64 64-64l138.7 0c13.8 0 27.3 4.5 38.4 12.8l38.4 28.8c5.5 4.2 12.3 6.4 19.2 6.4l117.3 0c35.3 0 64 28.7 64 64l0 16-365.4 0c-41.3 0-78 26.4-91.1 65.6zM477.8 448L99 448c-32.8 0-55.9-32.1-45.5-63.2l48-144C108 221.2 126.4 208 147 208l378.8 0c32.8 0 55.9 32.1 45.5 63.2l-48 144c-6.5 19.6-24.9 32.8-45.5 32.8z"/></svg>
+          <span>Documents</span>
+          <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" fill="#e8eaed"><path d="M480-361q-8 0-15-2.5t-13-8.5L268-556q-11-11-11-28t11-28q11-11 28-11t28 11l156 156 156-156q11-11 28-11t28 11q11 11 11 28t-11 28L508-372q-6 6-13 8.5t-15 2.5Z"/></svg>
+        </button>
+        <ul class="sub-menu show">
+          <div>
+            <li><a href="DocumentSearch.html">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path d="M480 272C480 317.9 465.1 360.3 440 394.7L566.6 521.4C579.1 533.9 579.1 554.2 566.6 566.7C554.1 579.2 533.8 579.2 521.3 566.7L394.7 440C360.3 465.1 317.9 480 272 480C157.1 480 64 386.9 64 272C64 157.1 157.1 64 272 64C386.9 64 480 157.1 480 272zM272 416C351.5 416 416 351.5 416 272C416 192.5 351.5 128 272 128C192.5 128 128 192.5 128 272C128 351.5 192.5 416 272 416z"/></svg>
+              Search</a>
+            </li>
+            <li class="active"><a href="MyFiles.html">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="20px"><path d="M64 128C64 110.3 78.3 96 96 96L544 96C561.7 96 576 110.3 576 128L576 160C576 177.7 561.7 192 544 192L96 192C78.3 192 64 177.7 64 160L64 128zM96 240L544 240L544 480C544 515.3 515.3 544 480 544L160 544C124.7 544 96 515.3 96 480L96 240zM248 304C234.7 304 224 314.7 224 328C224 341.3 234.7 352 248 352L392 352C405.3 352 416 341.3 416 328C416 314.7 405.3 304 392 304L248 304z"/></svg>
+              My Files</a>
+            </li>
+          </div>
+        </ul>
+      </li>
+      <li><a href="Voting.html">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96L0 416c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-320c0-35.3-28.7-64-64-64L64 32zm56 192c13.3 0 24 10.7 24 24l0 112c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-112c0-13.3 10.7-24 24-24zm184 88c0-13.3 10.7-24 24-24s24 10.7 24 24l0 48c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-48zM224 128c13.3 0 24 10.7 24 24l0 208c0 13.3-10.7 24-24 24s-24-10.7-24-24l0-208c0-13.3 10.7-24 24-24z"/></svg>
+        <span>E-voting</span>
+      </a></li>
+      <li><a href="Notifications.html">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24px" width="24px" viewBox="0 0 448 512"><path d="M224 0c-17.7 0-32 14.3-32 32l0 3.2C119 50 64 114.6 64 192l0 21.7c0 48.1-16.4 94.8-46.4 132.4L7.8 358.3C2.7 364.6 0 372.4 0 380.5 0 400.1 15.9 416 35.5 416l376.9 0c19.6 0 35.5-15.9 35.5-35.5 0-8.1-2.7-15.9-7.8-22.2l-9.8-12.2C400.4 308.5 384 261.8 384 213.7l0-21.7c0-77.4-55-142-128-156.8l0-3.2c0-17.7-14.3-32-32-32zM162 464c7.1 27.6 32.2 48 62 48s54.9-20.4 62-48l-124 0z"/></svg>
+        <span>Notifications</span>
+      </a></li>
+    </ul>
+  </nav>
+
+  <div class="member-main">
+    <header class="topbar">
+      <div class="topbar-left"><h2 class="page-title">View Document</h2></div>
+      <div class="topbar-right">
+        <div class="profile-container" id="profileContainer">
+          <div class="avatar"><span id="avatarInitials">U</span></div>
+          <div class="profile-meta">
+            <span class="profile-name-text" id="profileName">User</span>
+            <span class="role-badge" id="roleBadge">Member</span>
+          </div>
+          <i class="fas fa-chevron-down chevron-arrow"></i>
+          <div class="profile-dropdown" id="profileDropdown">
+            <button class="dropdown-item" id="updateDataBtn"><i class="fas fa-user-edit"></i><span>Update Data</span></button>
+            <div class="dropdown-sep"></div>
+            <button class="dropdown-item logout-item" id="logoutBtn"><i class="fas fa-sign-out-alt"></i><span>Logout</span></button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="dashboard-root">
+
+      <!-- Loading -->
+      <div id="loadingState" class="doc-loading-state">
+        <i class="fas fa-spinner fa-spin" style="font-size:1.5rem; color:#475569; margin-bottom:12px; display:block;"></i>
+        Loading document...
+      </div>
+
+      <!-- Error -->
+      <div id="errorState" class="doc-view-error-wrap" style="display:none">
+        <i id="errorIcon" class="fas fa-exclamation-triangle"></i>
+        <p id="errorMsg">An error occurred.</p>
+        <button onclick="history.back()" class="doc-back-btn" style="margin-bottom:0; margin-top:8px;">
+          <i class="fas fa-arrow-left"></i> Go Back
+        </button>
+      </div>
+
+      <!-- Content -->
+      <div id="contentState" style="display:none">
+        <button onclick="history.back()" class="doc-back-btn">
+          <i class="fas fa-arrow-left"></i> Back
+        </button>
+
+        <!-- Details header -->
+        <div class="doc-detail-header">
+          <div class="doc-detail-icon">
+            <i id="docDetailIcon" class="fas fa-file"></i>
+          </div>
+          <div class="doc-detail-info">
+            <h2 id="docDetailTitle"></h2>
+            <span class="cat-pill" id="docDetailCategory"></span>
+            <div class="doc-detail-meta">
+              <span><i class="fas fa-user"></i> <span id="docDetailUploader"></span></span>
+              <span><i class="fas fa-calendar-alt"></i> <span id="docDetailDate"></span></span>
+              <span><i class="fas fa-file-alt"></i> <span id="docDetailType"></span></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- PDF inline preview -->
+        <div id="pdfPreviewSection" class="doc-preview-wrap" style="display:none">
+          <iframe id="pdfFrame" title="Document Preview"></iframe>
+        </div>
+
+        <!-- Non-PDF / file-missing card -->
+        <div id="noPreviewSection" class="doc-no-preview-card" style="display:none">
+          <i id="noPreviewFileIcon" class="fas fa-file fa-3x"></i>
+          <p id="noPreviewMsg">Preview is not available for this file type.</p>
+          <button id="noPreviewDownloadBtn" class="dl-btn doc-download-large" style="display:none">
+            <i class="fas fa-download"></i> Download File
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../../js/Memberindex.js" defer></script>
+  <script>
+    const FILE_ICONS = { pdf:'fa-file-pdf', docx:'fa-file-word', doc:'fa-file-word', xlsx:'fa-file-excel', xls:'fa-file-excel', png:'fa-file-image', jpg:'fa-file-image', jpeg:'fa-file-image' };
+    const FILE_TYPES = { pdf:'PDF Document', docx:'Word Document', doc:'Word Document', xlsx:'Excel Spreadsheet', xls:'Excel Spreadsheet', png:'PNG Image', jpg:'JPEG Image', jpeg:'JPEG Image' };
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function showError(msg, icon = 'fa-exclamation-triangle') {
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('errorIcon').className = `fas ${icon}`;
+      document.getElementById('errorMsg').textContent = msg;
+      document.getElementById('errorState').style.display = 'flex';
+    }
+
+    async function triggerDownload(id, filename) {
+      try {
+        const res = await fetch(`/api/documents/download/${id}`);
+        if (!res.ok) return;
+        const blob = await res.blob();
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+      } catch {}
+    }
+
+    (async () => {
+      const id = new URLSearchParams(window.location.search).get('id');
+      if (!id) { showError('No document ID specified.'); return; }
+
+      let res;
+      try { res = await fetch(`/api/documents/${id}`); }
+      catch { showError('Could not connect to server.'); return; }
+
+      if (res.status === 401) { window.location.href = '/'; return; }
+      if (res.status === 403) { showError('You do not have permission to view this document.', 'fa-lock'); return; }
+
+      const data = await res.json();
+      if (!res.ok) { showError(data.error || 'Document not found.'); return; }
+
+      const doc = data.document;
+      const ext = (doc.filename || '').split('.').pop()?.toLowerCase();
+      const iconCls = 'fas ' + (FILE_ICONS[ext] || 'fa-file');
+
+      document.title = `${escHtml(doc.title || doc.filename)} — Organization X`;
+      document.getElementById('docDetailIcon').className = iconCls;
+      document.getElementById('docDetailTitle').textContent = doc.title || doc.filename;
+      document.getElementById('docDetailCategory').textContent = doc.category || 'Uncategorized';
+      document.getElementById('docDetailUploader').textContent = doc.uploader_name || 'Admin';
+      document.getElementById('docDetailDate').textContent = new Date(doc.uploaded_at).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+      document.getElementById('docDetailType').textContent = FILE_TYPES[ext] || 'File';
+
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('contentState').style.display = 'block';
+
+      if (!doc.file_exists) {
+        const noPreview = document.getElementById('noPreviewSection');
+        noPreview.style.display = 'flex';
+        document.getElementById('noPreviewFileIcon').className = iconCls + ' fa-3x';
+        document.getElementById('noPreviewMsg').textContent = 'This file has been removed from the server and is no longer available.';
+        return;
+      }
+
+      if (ext === 'pdf') {
+        document.getElementById('pdfPreviewSection').style.display = 'block';
+        document.getElementById('pdfFrame').src = `/api/documents/preview/${doc.id}`;
+      } else {
+        const noPreview = document.getElementById('noPreviewSection');
+        noPreview.style.display = 'flex';
+        document.getElementById('noPreviewFileIcon').className = iconCls + ' fa-3x';
+        const dlBtn = document.getElementById('noPreviewDownloadBtn');
+        dlBtn.style.display = 'inline-flex';
+        dlBtn.onclick = () => triggerDownload(doc.id, doc.filename);
+      }
+    })();
+  </script>
+</body>
+</html>

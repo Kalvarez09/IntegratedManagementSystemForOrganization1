@@ -10,3 +10,34 @@ CREATE TABLE IF NOT EXISTS members (
     reset_token_expires TIMESTAMP,
     created_at          TIMESTAMP DEFAULT NOW()
 );
+CREATE TABLE IF NOT EXISTS documents (
+    id          SERIAL PRIMARY KEY,
+    title       TEXT NOT NULL,
+    filename    TEXT NOT NULL,
+    filepath    TEXT NOT NULL,
+    category    TEXT DEFAULT 'Uncategorized',
+    access      TEXT DEFAULT 'members' CHECK (access IN ('members', 'admin')),
+    uploaded_by INTEGER REFERENCES members(id) ON DELETE SET NULL,
+    uploaded_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_documents_category ON documents(category);
+CREATE INDEX IF NOT EXISTS idx_documents_access   ON documents(access);
+
+CREATE TABLE IF NOT EXISTS meetings (
+    id          SERIAL PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL,
+    date        DATE NOT NULL,
+    time        TIME NOT NULL,
+    duration    VARCHAR(20)  DEFAULT '1 hr',
+    type        VARCHAR(20)  DEFAULT 'in-person',
+    location    VARCHAR(500),
+    agenda      TEXT,
+    status      VARCHAR(20)  DEFAULT 'scheduled',
+    minutes     TEXT,
+    created_at  TIMESTAMPTZ  DEFAULT NOW(),
+    created_by  INTEGER REFERENCES members(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_meetings_date   ON meetings(date);
+CREATE INDEX IF NOT EXISTS idx_meetings_status ON meetings(status);
