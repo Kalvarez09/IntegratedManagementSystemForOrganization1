@@ -6,6 +6,7 @@
   <title>Meetings — Organization X</title>
   <link rel="stylesheet" href="../../css/MemberStyle.css">
   <link rel="stylesheet" href="../../css/dashboard.css">
+  <link rel="stylesheet" href="../../css/meetings.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="../../images/icon.svg">
   <script src="../../js/Memberindex.js" defer></script>
@@ -75,32 +76,113 @@
     <main class="module-page">
       <div class="module-header">
         <div class="module-icon-box">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm96 312c0 25-12.7 47-32 59.9l0 92.1c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-92.1C172.7 359 160 337 160 312l0-40c0-53 43-96 96-96s96 43 96 96l0 40zM96 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112zm16 240l0 32c0 32.5 12.1 62.1 32 84.7l0 75.3c0 1.2 0 2.5 .1 3.7-8.5 7.6-19.7 12.3-32.1 12.3l-32 0c-26.5 0-48-21.5-48-48l0-56.6C12.9 364.4 0 343.7 0 320l0-32c0-53 43-96 96-96 12.7 0 24.8 2.5 35.9 6.9-12.6 21.4-19.9 46.4-19.9 73.1zM368 464l0-75.3c19.9-22.5 32-52.2 32-84.7l0-32c0-26.7-7.3-51.6-19.9-73.1 11.1-4.5 23.2-6.9 35.9-6.9 53 0 96 43 96 96l0 32c0 23.7-12.9 44.4-32 55.4l0 56.6c0 26.5-21.5 48-48 48l-32 0c-12.3 0-23.6-4.6-32.1-12.3 0-1.2 .1-2.5 .1-3.7zM416 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg>
+          <i class="fas fa-users" style="color:#4a9eff;font-size:1.4rem;"></i>
         </div>
         <div>
-          <h1 class="module-page-title">5.6 Meeting Management System</h1>
-          <p class="module-scrum-badge">SCRUM-10</p>
+          <h1 class="module-page-title">Meetings</h1>
+          <p class="module-scrum-badge">Scheduled by your organization's admin</p>
         </div>
       </div>
 
-      <div class="coming-card">
-        <div class="coming-icon-circle">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0a64 64 0 1 1 0 128 64 64 0 1 1 0-128zm96 312c0 25-12.7 47-32 59.9l0 92.1c0 26.5-21.5 48-48 48l-32 0c-26.5 0-48-21.5-48-48l0-92.1C172.7 359 160 337 160 312l0-40c0-53 43-96 96-96s96 43 96 96l0 40zM96 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112zm16 240l0 32c0 32.5 12.1 62.1 32 84.7l0 75.3c0 1.2 0 2.5 .1 3.7-8.5 7.6-19.7 12.3-32.1 12.3l-32 0c-26.5 0-48-21.5-48-48l0-56.6C12.9 364.4 0 343.7 0 320l0-32c0-53 43-96 96-96 12.7 0 24.8 2.5 35.9 6.9-12.6 21.4-19.9 46.4-19.9 73.1zM368 464l0-75.3c19.9-22.5 32-52.2 32-84.7l0-32c0-26.7-7.3-51.6-19.9-73.1 11.1-4.5 23.2-6.9 35.9-6.9 53 0 96 43 96 96l0 32c0 23.7-12.9 44.4-32 55.4l0 56.6c0 26.5-21.5 48-48 48l-32 0c-12.3 0-23.6-4.6-32.1-12.3 0-1.2 .1-2.5 .1-3.7zM416 32a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"/></svg>
+      <div class="members-toolbar" style="margin-bottom:20px;">
+        <input type="text" id="memberMeetingSearch" class="member-search-input"
+          placeholder="Search by title or location...">
+        <select id="memberMeetingFilter" class="member-search-input"
+          style="max-width:180px; cursor:pointer;">
+          <option value="">All Statuses</option>
+          <option value="scheduled">Scheduled</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div class="members-table-wrapper" style="overflow-x:auto;">
+        <table class="members-table" style="min-width:700px;">
+          <thead>
+            <tr>
+              <th style="min-width:200px;">Meeting Title</th>
+              <th style="min-width:130px;">Date / Time</th>
+              <th style="min-width:150px;">Location</th>
+              <th style="min-width:100px;">Type</th>
+              <th style="min-width:80px;">Duration</th>
+              <th style="min-width:110px;">Status</th>
+              <th style="min-width:120px;">Minutes</th>
+            </tr>
+          </thead>
+          <tbody id="memberMeetingsBody">
+            <tr><td colspan="7" class="members-loading">Loading meetings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ── Past Meetings Section ───────────────────────────── -->
+      <div style="margin-top:40px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+          <div class="module-icon-box" style="width:38px;height:38px;">
+            <i class="fas fa-history" style="color:#a78bfa;font-size:1rem;"></i>
+          </div>
+          <div>
+            <h2 style="font-size:1.05rem;font-weight:700;color:#e6e6ef;margin:0;">Past Meetings</h2>
+            <p style="font-size:0.76rem;color:#64748b;margin:2px 0 0;font-family:monospace;">Meetings whose date has already passed — click to view details &amp; minutes</p>
+          </div>
         </div>
-        <h2 class="coming-title">5.6 Meeting Management System</h2>
-        <p class="coming-desc">Schedule, manage, and track organizational meetings with attendance and minutes recording. Full functionality will be built in upcoming sprints.</p>
-        <div class="coming-badge">
-          <svg xmlns="http://www.w3.org/2000/svg" height="12px" viewBox="0 0 512 512"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120l0 136c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.5 33.3-6.5s4.5-25.9-6.5-33.3L280 243.2 280 120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg>
-          Future functionalities will be added as sprints progress
+        <div id="pastMeetingsList"></div>
+      </div>
+
+      <!-- ── Past Meeting Detail Modal ──────────────────────── -->
+      <div class="modal-overlay" id="pastMeetingModal" hidden>
+        <div class="modal-card" style="max-width:660px;width:92vw;">
+          <div class="modal-header">
+            <div style="flex:1;min-width:0;">
+              <h3 id="pmTitle" style="margin:0;word-break:break-word;"></h3>
+              <p id="pmBadges" style="margin:6px 0 0;display:flex;gap:6px;flex-wrap:wrap;"></p>
+            </div>
+            <button class="modal-close" id="closePastMeetingModal">✕</button>
+          </div>
+          <div class="modal-body" style="display:flex;flex-direction:column;gap:20px;">
+            <div id="pmDetails" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;"></div>
+            <div>
+              <div style="font-size:0.7rem;color:#64748b;font-family:monospace;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #16263b;">Meeting Minutes</div>
+              <div id="pmMinutes"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="closePastMeetingBtn" style="background:#0b1523;border:1px solid #16263b;border-radius:8px;padding:10px 20px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">Close</button>
+          </div>
         </div>
-        <div class="feature-chips">
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Meeting Scheduling</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Attendance Tracking</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Agenda Management</span>
-          <span class="feature-chip"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg>Minutes Recording</span>
+      </div>
+
+      <!-- Read-only Minutes Modal -->
+      <div class="modal-overlay" id="memberMinutesModal" hidden>
+        <div class="modal-card" style="max-width:620px;width:90vw;">
+          <div class="modal-header">
+            <div>
+              <h3 id="memberMinutesTitle">Meeting Minutes</h3>
+              <p id="memberMinutesMeta" style="font-size:0.78rem;color:#94a3b8;margin:3px 0 0;font-family:monospace;"></p>
+            </div>
+            <button class="modal-close" onclick="document.getElementById('memberMinutesModal').hidden=true">✕</button>
+          </div>
+          <div class="modal-body">
+            <textarea id="memberMinutesText" rows="12" readonly style="
+              width:100%; background:#0b1523; border:1px solid #16263b;
+              border-radius:8px; padding:12px 16px; color:#e6e6ef;
+              font-family:monospace; font-size:0.85rem; resize:vertical;
+              outline:none; box-sizing:border-box; line-height:1.6;
+              cursor:default;
+            "></textarea>
+          </div>
+          <div class="modal-footer">
+            <button onclick="document.getElementById('memberMinutesModal').hidden=true" style="
+              background:#0b1523;border:1px solid #16263b;border-radius:8px;
+              padding:10px 20px;color:#e6e6ef;font-family:monospace;font-size:0.9rem;cursor:pointer;">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </main>
+
+    <script src="../../js/MemberMeetings.js"></script>
   </div>
 
 </body>
