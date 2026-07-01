@@ -136,4 +136,95 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+// ── Live dashboard data (Dashboard.html only) ──────────────
+document.addEventListener('DOMContentLoaded', async () => {
+    const activeVotesEl = document.querySelector('.dashboard-card .feed-list-placeholder');
+    if (!document.querySelector('.dashboard-root')) return; // only run on Dashboard.html
+
+    const [pollsRes, meetingsRes, docsRes] = await Promise.allSettled([
+        fetch('/api/polls').then(r => r.json()),
+        fetch('/api/meetings').then(r => r.json()),
+        fetch('/api/documents').then(r => r.json())
+    ]);
+
+    // ── Pending Votes + Active Votes card ──
+    const polls = pollsRes.status === 'fulfilled' ? (pollsRes.value.polls || []) : [];
+    const pendingPolls = polls.filter(p => p.status === 'active' && !p.my_vote_option_id);
+
+    const pendingCountEl = document.querySelector('.alert-card .metric-value');
+    const pendingSubEl   = document.querySelector('.alert-card .card-subtitle');
+    if (pendingCountEl) pendingCountEl.textContent = pendingPolls.length;
+    if (pendingSubEl) {
+        pendingSubEl.textContent = pendingPolls.length
+            ? `${escHtml(pendingPolls[0].title)} closes ${new Date(pendingPolls[0].end_date).toLocaleDateString()}`
+            : 'No pending votes right now';
+    }
+
+    const activeVotesList = document.querySelector('.dashboard-card.wide-card .feed-list-placeholder');
+    if (activeVotesList) {
+        activeVotesList.innerHTML = pendingPolls.length
+            ? pendingPolls.map(p => `
+                <li class="action-item">
+                    <div>
+                        <strong>${escHtml(p.title)}</strong>
+                        <p>Status: <span class="text-live">Live</span></p>
+                    </div>
+                    <button class="action-btn" onclick="window.location.href='Voting.html'">Cast Vote</button>
+                </li>`).join('')
+            : `<li class="action-item"><div><strong>No active votes</strong><p>You're all caught up.</p></div></li>`;
+    }
+
+    // ── Upcoming Meetings ──
+    const meetings = meetingsRes.status === 'fulfilled' ? (meetingsRes.value.meetings || []) : [];
+    const now = new Date();
+    const upcoming = meetings
+        .filter(m => m.status === 'scheduled' && new Date(`${m.date}T${m.time}`) >= now)
+        .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+    const meetingCards = document.querySelectorAll('.stat-mini-card');
+    const meetingCountEl = meetingCards[1]?.querySelector('.metric-value');
+    const meetingSubEl   = meetingCards[1]?.querySelector('.card-subtitle');
+    if (meetingCountEl) meetingCountEl.textContent = upcoming.length;
+    if (meetingSubEl) {
+        meetingSubEl.textContent = upcoming.length
+            ? `Next: ${escHtml(upcoming[0].title)} (${new Date(`${upcoming[0].date}T${upcoming[0].time}`).toLocaleDateString('en-US', { month: 'long', day: 'numeric' })})`
+            : 'No upcoming meetings';
+    }
+
+    // ── Recently Added Documents ──
+    const docs = docsRes.status === 'fulfilled' ? (docsRes.value.documents || []) : [];
+    const recentDocs = [...docs]
+        .sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at))
+        .slice(0, 2);
+
+    const docCards = document.querySelectorAll('.dashboard-card.wide-card .feed-list-placeholder');
+    const docsList = docCards[1]; // second wide-card is "Recently Added Documents"
+    if (docsList) {
+        docsList.innerHTML = recentDocs.length
+            ? recentDocs.map(d => `
+                <li class="action-item">
+                    <div>
+                        <strong>${escHtml(d.title || d.filename)}</strong>
+                        <p>Uploaded: ${new Date(d.uploaded_at).toLocaleDateString()}</p>
+                    </div>
+                    <button class="action-btn outline-btn"
+                        onclick="downloadDashboardDoc(${d.id}, '${escHtml(d.filename)}')">Download</button>
+                </li>`).join('')
+            : `<li class="action-item"><div><strong>No documents yet</strong></div></li>`;
+    }
+});
+
+async function downloadDashboardDoc(docId, filename) {
+    try {
+        const res = await fetch(`/api/documents/download/${docId}`);
+        if (!res.ok) { alert('Could not download this file.'); return; }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename; a.click();
+        URL.revokeObjectURL(url);
+    } catch {
+        alert('Could not connect to server.');
+    }
+}
 

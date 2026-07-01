@@ -169,3 +169,9 @@ async function submitVote(pollId) {
     }
 }
 document.addEventListener('DOMContentLoaded', loadPolls);
+setInterval(() => {
+    const hasPendingSelection = document.querySelector('[data-selected-option]');
+    if (!hasPendingSelection) {
+        loadPolls();
+    }
+}, 30000);
