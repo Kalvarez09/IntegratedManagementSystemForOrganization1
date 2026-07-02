@@ -5,7 +5,8 @@
 }
 
 :root {
-    --bg-sidebar:     #101C2E   ;
+    --bg-sidebar:     #101C2E;
+    --bg-main:        #0b1121;
     --bg-card:        #0f1929;
     --bg-card-hover:  #14213a;
     --border:         #ffffff0f;
@@ -15,6 +16,7 @@
     --accent-dim:     #3b82f61f;
     --accent-green:   #10b981;
     --accent-amber:   #f59e0b;
+    --hover-clr:      #0d1f36;
     --text-primary:   #f1f5f9;
     --text-secondary: #94a3b8;
     --text-muted:     #94a3b8;
@@ -24,6 +26,7 @@
     --ease:           0.22s ease;
     --radius:         12px;
     --radius-sm:      8px;
+    
 }
 
 html, body {
@@ -684,7 +687,44 @@ html, body {
     color: #34d399;
     border-color: #10b98133;
 }
-
+/* =============================================
+              ACTIONS BUTTONS 
+   ============================================= */
+.action-btn {
+    background: #0b1523;
+    border: 1px solid #16263b;
+    border-radius: 8px;
+    padding: 10px 18px;
+    color: var(--text-primary);
+    font-family: monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+.action-btn:hover {
+    background: linear-gradient(175deg, #0f3460, #2e844c);
+    color: white;
+}
+.outline-btn {
+    background: transparent;
+    border-color: #2a3f5a;
+    color: var(--text-secondary);
+}
+.outline-btn:hover {
+    background: #0d1f36;
+    border-color: #3b82f6;
+    color: var(--text-primary);
+}
+/* Neutral cancel — don't use danger-btn for this */
+.danger-btn.outline-btn {
+    background: transparent;
+    color: #f87171;
+    border-color: #dc262666;
+}
+.danger-btn.outline-btn:hover {
+    background: #dc262614;
+    border-color: #dc2626;
+}
 /* =============================================
    FUTURE-MODULE SECTIONS
    ============================================= */
@@ -801,7 +841,9 @@ html, body {
     color: var(--accent-green);
     font-size: 11px;
 }
-/*/////////////////////MEMBERS TAB//////////////////*/
+/* =============================================
+           MEMBER SECTION
+   ============================================= */
 .members-toolbar {
     display: flex;
     align-items: center;
@@ -815,11 +857,11 @@ html, body {
     border: 1px solid #16263b;
     border-radius: 8px;
     padding: 10px 16px;
-    color: var(--text-clr);
+    color: var(--text-primary);
     font-family: monospace;
     font-size: 0.9rem;
 }
-.member-search-input::placeholder { color: var(--secondary-text-clr); }
+.member-search-input::placeholder { color: var(--text-secondary); }
 .member-search-input:focus { outline: none; border-color: #4a9eff; }
 
 .members-table-wrapper {
@@ -835,7 +877,7 @@ html, body {
     font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--secondary-text-clr);
+    color: var(--text-secondary);
     border-bottom: 1px solid #16263b;
     font-family: monospace;
 }
@@ -844,7 +886,7 @@ html, body {
     padding: 14px 20px;
     border-bottom: 1px solid #16263b;
     font-size: 0.9rem;
-    color: var(--text-clr);
+    color: var(--text-primary);
 }
 
 .members-table tr:last-child td { border-bottom: none; }
@@ -872,65 +914,46 @@ html, body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
-.role-pill.admin { 
-     background: #3b82f629;
-     color: #60a5fa;
-     border: 1px solid #3b82f647;
+.role-pill.admin, .role-badge.admin {
+    background: #3b82f629;
+    color: #60a5fa;
+    border: 1px solid #3b82f647;
 }
-.role-pill.member { 
-   background: #10b98124;
-      color: #34d399;
-   border: 1px solid #10b98147;
+.role-pill.member, .role-badge.member {
+    background: #10b98124;
+    color: #34d399;
+    border: 1px solid #10b98147;
 }
-.role-pill.president {
+.role-pill.president, .role-badge.president {
     background: #7c3aed24;
     color: #a78bfa;
     border: 1px solid #7c3aed47;
 }
-.role-pill.vice_president {
+.role-pill.vice_president, .role-badge.vice_president {
     background: #6d28d924;
     color: #c4b5fd;
     border: 1px solid #6d28d947;
 }
-.role-pill.secretary {
+.role-pill.secretary, .role-badge.secretary {
     background: #0891b224;
     color: #67e8f9;
     border: 1px solid #0891b247;
 }
-.role-pill.treasurer {
+.role-pill.treasurer, .role-badge.treasurer {
     background: #d9770624;
     color: #fcd34d;
     border: 1px solid #d9770647;
 }
-.role-pill.technical_lead {
+.role-pill.technical_lead, .role-badge.technical_lead {
     background: #05966924;
     color: #6ee7b7;
     border: 1px solid #05966947;
 }
 
-.members-loading {
-    text-align: center;
-    color: var(--secondary-text-clr);
-    padding: 30px;
-    font-family: monospace;
-}
-#uploadCsvBtn{
-  
-    max-width: 400px;
-    background: #0b1523;
-    border: 1px solid #16263b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text-clr);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-#uploadCsvBtn:hover{
-    background:linear-gradient(175deg, #0f3460, #545a5f);
-    color: white;
-    cursor: pointer;
-}
-/*/////////////////////UPLOAD//////////////*/
+
+/* =============================================
+           UPLOAD SECTION
+   ============================================= */
 
 .upload-status {
     margin-bottom: 16px;
@@ -967,22 +990,10 @@ html, body {
 .upload-status li { 
     margin-bottom: 2px; 
 }
-#addMemberBtn,#uploadDocBtn{
-    max-width: 400px;
-    background: #0b1523;
-    border: 1px solid #16263b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text-clr);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-#addMemberBtn:hover,#uploadDocBtn:hover{
-    background:linear-gradient(175deg, #0f3460, #2e844c);
-    color: white;
-    cursor: pointer;
-}
-/* ////////////////Modals ////////////////////////////////////// */
+
+/* =============================================
+                FORM SECTION
+   ============================================= */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -1012,21 +1023,21 @@ html, body {
 .modal-header h3 {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--text-clr);
+    color: var(--text-primary);
     font-family: monospace;
     margin: 0;
 }
 .modal-close {
     background: none;
     border: none;
-    color: var(--secondary-text-clr);
+    color: var(--text-secondary);
     font-size: 1rem;
     cursor: pointer;
     padding: 4px 8px;
     border-radius: 4px;
     transition: color 0.2s;
 }
-.modal-close:hover { color: var(--text-clr); }
+.modal-close:hover { color: var(--text-primary); }
 
 .modal-body { margin-bottom: 24px; }
 .modal-body p { line-height: 1.6; }
@@ -1036,7 +1047,7 @@ html, body {
     display: block;
     font-size: 0.78rem;
     font-family: monospace;
-    color: var(--secondary-text-clr);
+    color: var(--text-secondary);
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -1056,14 +1067,14 @@ html, body {
     border-radius: 6px;
     padding: 6px 10px;
     cursor: pointer;
-    color: var(--secondary-text-clr);
+    color: var(--text-secondary);
     transition: all 0.2s;
 }
 .tbl-action-btn:hover { background: var(--hover-clr); }
 .tbl-action-btn.delete:hover { border-color: #dc2626; color: #f87171; }
 .tbl-action-btn.result:hover { background: var(--hover-clr); border-color: #2a5a8a; color: #60a5fa; }
 .tbl-action-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-.tbl-action-btn:disabled:hover { background: none; border-color: #16263b; color: var(--secondary-text-clr); }
+.tbl-action-btn:disabled:hover { background: none; border-color: #16263b; color: var(--text-secondary); }
 
 .danger-btn {
     background: #dc2626;
@@ -1080,49 +1091,9 @@ html, body {
     background: #b91c1c;
  }
 
-.add-btn{
-    background:linear-gradient(175deg, #0f3460, #545a5f);
-    color: white;
-    cursor: pointer;
-    background: #dc2626;
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    font-family: monospace; 
-}
 
-#addMemberSubmitBtn,#submitUploadBtn,#createPollSubmitBtn{
-    max-width: 400px;
-    background: #0b1523;
-    border: 1px solid #16263b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text-clr);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-#addMemberSubmitBtn:hover,#submitUploadBtn:hover,#createPollSubmitBtn:hover{
-    background:linear-gradient(175deg, #0f3460, #2e844c);
-    color: white;
-    cursor: pointer;
-}
-#cancel-SubmitBtn{
-    max-width: 400px;
-    background: #0b1523;
-    border: 1px solid #16263b;
-    border-radius: 8px;
-    padding: 10px 16px;
-    color: var(--text-clr);
-    font-family: monospace;
-    font-size: 0.9rem;
-}
-#cancel-SubmitBtn:hover{
-    background:linear-gradient(175deg, #0f3460, #2e844c);
-    color: white;
-    cursor: pointer;
-}
+
+
 /*///////////////////PICKING NEW ROLES///////////////////*/
 .clickable-role {
     cursor: pointer;
@@ -1136,7 +1107,7 @@ html, body {
     background: #0b1523;
     border: 1px solid #4a9eff;
     border-radius: 6px;
-    color: var(--text-clr);
+    color: var(--text-primary);
     font-family: monospace;
     font-size: 0.78rem;
     padding: 4px 8px;
@@ -1145,7 +1116,7 @@ html, body {
 }
 .role-inline-select option {
     background: #101C2E;
-    color: var(--text-clr);
+    color: var(--text-primary);
 }
 /* =============================================
                     VOTING
@@ -1160,7 +1131,7 @@ html, body {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     background: #101C2E;
-    color: var(--secondary-text-clr);
+    color: var(--text-secondary);
     border: 1px solid #16263b;
 }
 .poll-status-pill.success {
@@ -1187,7 +1158,7 @@ html, body {
     border: 1px solid #16263b;
     border-radius: 8px;
     padding: 10px 16px;
-    color: var(--text-clr);
+    color: var(--text-primary);
     font-family: monospace;
     font-size: 0.9rem;
 }

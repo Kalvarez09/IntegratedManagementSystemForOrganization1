@@ -478,7 +478,7 @@ async function renderMembersSection() {
             </div>
             <div class="modal-footer">
                 <button class="danger-btn outline-btn"  onclick="closeModal('addMemberModal')">Cancel</button>
-                <button class="action-btn" id="addMemberSubmitBtn" class="add-btn" onclick="submitAddMember()">Add Member</button>
+                <button class="action-btn" id="addMemberSubmitBtn" onclick="submitAddMember()">Add Member</button>
             </div>
         </div>
     </div>
