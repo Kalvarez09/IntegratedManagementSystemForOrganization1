@@ -17,7 +17,7 @@
     --accent-amber:   #f59e0b;
     --text-primary:   #f1f5f9;
     --text-secondary: #94a3b8;
-    --text-muted:     #475569;
+    --text-muted:     #94a3b8;
     --sidebar-width:  262px;
     --sidebar-collapsed: 70px;
     --topbar-height:  66px;
@@ -420,6 +420,116 @@ html, body {
     height: 1px;
     background: var(--border);
     margin: 4px 0;
+}
+/* =============================================
+   SIDEBAR
+   ============================================= */
+   /* ── Admin overview dashboard ─────────────────────────── */
+.admin-stats-strip {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.admin-stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    border-left: 3px solid var(--accent);
+    transition: transform 0.5s ease-in-out;
+}
+.admin-stat-card:hover {
+    transform: translateY(-20px);
+}
+.admin-stat-card.balance { border-left-color: var(--accent-green); }
+.admin-stat-label {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 8px;
+    font-family: monospace;
+}
+.admin-stat-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+    font-family: monospace;
+}
+.admin-stat-value.loading { color: var(--text-muted); }
+.admin-stat-desc { font-size: 0.75rem; color: var(--text-muted); margin: 0; }
+
+.admin-overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+.admin-overview-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+}
+.admin-overview-card.wide { grid-column: span 2; }
+
+.admin-overview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+.admin-overview-header h3 {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-family: monospace;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.admin-overview-header h3 i { color: var(--accent); font-size: 0.85rem; }
+
+.admin-overview-link {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-family: monospace;
+    font-size: 0.75rem;
+    padding: 5px 12px;
+    cursor: pointer;
+    transition: border-color var(--ease), color var(--ease);
+}
+.admin-overview-link:hover { border-color: var(--accent); color: var(--accent); }
+
+.admin-overview-list { display: flex; flex-direction: column; gap: 10px; }
+.admin-overview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg-sidebar);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+.admin-overview-row strong { display: block; color: var(--text-primary); font-size: 0.85rem; margin-bottom: 2px; }
+.admin-overview-meta { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; }
+.admin-overview-empty { color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 16px 0; margin: 0; }
+.admin-overview-badge { font-size: 0.72rem; font-family: monospace; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
+.admin-overview-badge.success { background: #10b98124; color: #34d399; border: 1px solid #10b98147; }
+.admin-overview-badge.danger  { background: #ef444424; color: #f87171; border: 1px solid #ef444447; }
+
+.admin-overview-finance { display: flex; flex-direction: column; gap: 10px; }
+.admin-overview-finance .admin-overview-row > span:first-child {
+    color: #cbd5e1;
+    font-size: 0.85rem;
+}
+@media (max-width: 900px) {
+    .admin-overview-grid { grid-template-columns: 1fr; }
+    .admin-overview-card.wide { grid-column: span 1; }
 }
 
 /* =============================================

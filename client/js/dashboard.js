@@ -82,34 +82,96 @@ function renderHome(user) {
     const isAdmin = user.role === 'admin';
 
     if (isAdmin) {
-        el.innerHTML = `
-            <h1 class="welcome-heading">Welcome back, ${escHtml(firstName)}</h1>
-            <p class="welcome-sub">Here is your administration overview for today.</p>
+    el.innerHTML = `
+        <h1 class="welcome-heading">Welcome back, ${escHtml(firstName)}</h1>
+        <p class="welcome-sub">Here is your administration overview for today.</p>
 
-            <div class="stats-grid">
-                <div class="stat-card" id="memberCountCard">
-                    <p class="stat-label">Total Members</p>
-                    <p class="stat-value loading" id="memberCountVal">...</p>
-                    <p class="stat-desc">Registered in the system</p>
+        <div class="admin-stats-strip">
+            <div class="admin-stat-card" id="statMembers">
+                <p class="admin-stat-label">Total Members</p>
+                <p class="admin-stat-value loading" id="statMembersVal">...</p>
+                <p class="admin-stat-desc">Registered in the system</p>
+            </div>
+            <div class="admin-stat-card" id="statPolls">
+                <p class="admin-stat-label">Active Polls</p>
+                <p class="admin-stat-value loading" id="statPollsVal">...</p>
+                <p class="admin-stat-desc" id="statPollsDesc">Currently open for voting</p>
+            </div>
+            <div class="admin-stat-card" id="statMeetings">
+                <p class="admin-stat-label">Upcoming Meetings</p>
+                <p class="admin-stat-value loading" id="statMeetingsVal">...</p>
+                <p class="admin-stat-desc" id="statMeetingsDesc">Scheduled ahead</p>
+            </div>
+            <div class="admin-stat-card" id="statDocs">
+                <p class="admin-stat-label">Documents on File</p>
+                <p class="admin-stat-value loading" id="statDocsVal">...</p>
+                <p class="admin-stat-desc">Across all categories</p>
+            </div>
+            <div class="admin-stat-card balance" id="statBalance">
+                <p class="admin-stat-label">Net Balance</p>
+                <p class="admin-stat-value loading" id="statBalanceVal">...</p>
+                <p class="admin-stat-desc">All recorded transactions</p>
+            </div>
+        </div>
+
+        <div class="admin-overview-grid">
+
+            <div class="admin-overview-card wide">
+                <div class="admin-overview-header">
+                    <h3><i class="fas fa-square-poll-vertical"></i> Active Polls</h3>
+                    <button class="admin-overview-link" onclick="navigate('e-voting')">View All</button>
+                </div>
+                <div id="overviewPollsList" class="admin-overview-list">
+                    <p class="admin-overview-empty">Loading...</p>
                 </div>
             </div>
 
-            <div class="info-card">
-                <h3 class="info-card-title"> More features are on the way</h3>
-                <p class="info-card-body">
-                    This is Sprint 1 of the Integrated Management System for Organization X.
-                    The administration panel will expand with powerful tools across every module
-                    as development progresses sprint by sprint. Stay tuned!
-                </p>
-                <div class="sprint-tags">
-                    ${Object.values(SECTIONS).map(s =>
-                        `<span class="sprint-tag">${s.scrum}: ${s.title}</span>`
-                    ).join('')}
+            <div class="admin-overview-card">
+                <div class="admin-overview-header">
+                    <h3><i class="fas fa-users"></i> Upcoming Meetings</h3>
+                    <button class="admin-overview-link" onclick="navigate('meetings')">View All</button>
+                </div>
+                <div id="overviewMeetingsList" class="admin-overview-list">
+                    <p class="admin-overview-empty">Loading...</p>
                 </div>
             </div>
-        `;
-        loadMemberCount();
-    } else {
+
+            <div class="admin-overview-card">
+                <div class="admin-overview-header">
+                    <h3><i class="fas fa-chart-line"></i> Financial Snapshot</h3>
+                    <button class="admin-overview-link" onclick="navigate('financial')">View All</button>
+                </div>
+                <div id="overviewFinancial" class="admin-overview-finance">
+                    <p class="admin-overview-empty">Loading...</p>
+                </div>
+            </div>
+
+            <div class="admin-overview-card wide">
+                <div class="admin-overview-header">
+                    <h3><i class="fas fa-folder-open"></i> Recently Added Documents</h3>
+                    <button class="admin-overview-link" onclick="navigate('documents')">View All</button>
+                </div>
+                <div id="overviewDocsList" class="admin-overview-list">
+                    <p class="admin-overview-empty">Loading...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="info-card" style="margin-top:24px;">
+            <h3 class="info-card-title">Coming this sprint</h3>
+            <p class="info-card-body">
+                Two modules are being built in the current sprint and will plug into this
+                dashboard once ready:
+            </p>
+            <div class="sprint-tags">
+                <span class="sprint-tag">SCRUM-9: 5.51 WhatsApp Analytics Features</span>
+                <span class="sprint-tag">SCRUM-34: 5.5.2 Smart Notification Features</span>
+            </div>
+        </div>
+    `;
+    loadAdminOverviewData();
+} else {
         el.innerHTML = `
             <h1 class="welcome-heading">Welcome back, ${escHtml(firstName)}</h1>
             <p class="welcome-sub">Your member portal for Organization X.</p>
@@ -136,19 +198,139 @@ function renderHome(user) {
     }
 }
 
-async function loadMemberCount() {
-    try {
-        const res = await fetch('/api/auth/members/count');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        const el = document.getElementById('memberCountVal');
-        if (el) {
-            el.textContent = data.count.toLocaleString();
-            el.classList.remove('loading');
-        }
-    } catch {
-        const el = document.getElementById('memberCountVal');
-        if (el) { el.textContent = '—'; el.classList.remove('loading'); }
+async function loadAdminOverviewData() {
+    const [membersRes, pollsRes, meetingsRes, docsRes, financialRes] = await Promise.allSettled([
+        fetch('/api/auth/members/count').then(r => r.json()),
+        fetch('/api/polls').then(r => r.json()),
+        fetch('/api/meetings').then(r => r.json()),
+        fetch('/api/documents').then(r => r.json()),
+        fetch('/api/financial').then(r => r.json())
+    ]);
+
+    // ── Total Members ──
+    const membersVal = document.getElementById('statMembersVal');
+    if (membersVal) {
+        membersVal.textContent = membersRes.status === 'fulfilled'
+            ? (membersRes.value.count ?? 0).toLocaleString() : '—';
+        membersVal.classList.remove('loading');
+    }
+
+    // ── Active Polls ──
+    const polls = pollsRes.status === 'fulfilled' ? (pollsRes.value.polls || []) : [];
+    const activePolls = polls.filter(p => p.status === 'active');
+
+    const pollsVal = document.getElementById('statPollsVal');
+    if (pollsVal) { pollsVal.textContent = activePolls.length; pollsVal.classList.remove('loading'); }
+
+    const pollsDesc = document.getElementById('statPollsDesc');
+    if (pollsDesc) {
+        const totalVotes = activePolls.reduce((s, p) =>
+            s + (p.options || []).reduce((s2, o) => s2 + (o.vote_count || 0), 0), 0);
+        pollsDesc.textContent = activePolls.length
+            ? `${totalVotes} total vote${totalVotes !== 1 ? 's' : ''} cast`
+            : 'None currently open';
+    }
+
+    const pollsListEl = document.getElementById('overviewPollsList');
+    if (pollsListEl) {
+        pollsListEl.innerHTML = activePolls.length
+            ? activePolls.slice(0, 3).map(p => {
+                const total = (p.options || []).reduce((s, o) => s + (o.vote_count || 0), 0);
+                return `
+                <div class="admin-overview-row">
+                    <div>
+                        <strong>${escHtml(p.title)}</strong>
+                        <span class="admin-overview-meta">Closes ${new Date(p.end_date).toLocaleDateString()}</span>
+                    </div>
+                    <span class="admin-overview-badge success">${total} vote${total !== 1 ? 's' : ''}</span>
+                </div>`;
+              }).join('')
+            : '<p class="admin-overview-empty">No active polls right now.</p>';
+    }
+
+    // ── Upcoming Meetings ──
+    const meetings = meetingsRes.status === 'fulfilled' ? (meetingsRes.value.meetings || []) : [];
+    const now = new Date();
+    const upcoming = meetings
+        .filter(m => m.status === 'scheduled' && new Date(`${m.date}T${m.time}`) >= now)
+        .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+    const meetingsVal = document.getElementById('statMeetingsVal');
+    if (meetingsVal) { meetingsVal.textContent = upcoming.length; meetingsVal.classList.remove('loading'); }
+
+    const meetingsDesc = document.getElementById('statMeetingsDesc');
+    if (meetingsDesc) {
+        meetingsDesc.textContent = upcoming.length
+            ? `Next: ${new Date(`${upcoming[0].date}T${upcoming[0].time}`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+            : 'Nothing scheduled';
+    }
+
+    const meetingsListEl = document.getElementById('overviewMeetingsList');
+    if (meetingsListEl) {
+        meetingsListEl.innerHTML = upcoming.length
+            ? upcoming.slice(0, 3).map(m => `
+                <div class="admin-overview-row">
+                    <div>
+                        <strong>${escHtml(m.title)}</strong>
+                        <span class="admin-overview-meta">${new Date(`${m.date}T${m.time}`).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} &middot; ${new Date(`${m.date}T${m.time}`).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                </div>`).join('')
+            : '<p class="admin-overview-empty">No upcoming meetings.</p>';
+    }
+
+    // ── Documents ──
+    const docs = docsRes.status === 'fulfilled' ? (docsRes.value.documents || []) : [];
+    const docsVal = document.getElementById('statDocsVal');
+    if (docsVal) { docsVal.textContent = docs.length; docsVal.classList.remove('loading'); }
+
+    const recentDocs = [...docs].sort((a, b) => new Date(b.uploaded_at) - new Date(a.uploaded_at)).slice(0, 3);
+    const docsListEl = document.getElementById('overviewDocsList');
+    if (docsListEl) {
+        docsListEl.innerHTML = recentDocs.length
+            ? recentDocs.map(d => `
+                <div class="admin-overview-row">
+                    <div>
+                        <strong>${escHtml(d.title || d.filename)}</strong>
+                        <span class="admin-overview-meta">${escHtml(d.category || 'Uncategorized')} &middot; ${new Date(d.uploaded_at).toLocaleDateString()}</span>
+                    </div>
+                </div>`).join('')
+            : '<p class="admin-overview-empty">No documents uploaded yet.</p>';
+    }
+
+    // ── Financial ──
+    const txns = financialRes.status === 'fulfilled' ? (financialRes.value.transactions || []) : [];
+    const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + parseFloat(t.amount), 0);
+    const expenditure = txns.filter(t => t.type === 'expenditure').reduce((s, t) => s + parseFloat(t.amount), 0);
+    const balance = income - expenditure;
+
+    const balanceVal = document.getElementById('statBalanceVal');
+    if (balanceVal) {
+    balanceVal.textContent = `£${balance.toFixed(2)}`;
+    balanceVal.classList.remove('loading');
+    balanceVal.style.color = balance >= 0 ? '#34d399' : '#f87171';
+
+    const balanceCard = document.getElementById('statBalance');
+    if (balanceCard) {
+        balanceCard.style.borderLeftColor = balance >= 0 ? '#10b981' : '#ef4444';
+    }
+}
+
+    const finEl = document.getElementById('overviewFinancial');
+    if (finEl) {
+        finEl.innerHTML = `
+            <div class="admin-overview-row">
+                <span class="admin-overview-meta">Income</span>
+                <span class="admin-overview-badge success">€${income.toFixed(2)}</span>
+            </div>
+            <div class="admin-overview-row">
+                <span class="admin-overview-meta">Expenditure</span>
+                <span class="admin-overview-badge danger">€${expenditure.toFixed(2)}</span>
+            </div>
+            <div class="admin-overview-row">
+                <span class="admin-overview-meta">Net Balance</span>
+                <span class="admin-overview-badge ${balance >= 0 ? 'success' : 'danger'}">€${balance.toFixed(2)}</span>
+            </div>
+        `;
     }
 }
 
